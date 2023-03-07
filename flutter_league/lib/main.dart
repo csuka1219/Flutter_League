@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/providers/drop_provider.dart';
 import 'package:flutter_riot_api/screens/home_screen.dart';
+import 'package:flutter_riot_api/screens/summoner_details.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => HomeScreen(),
+        '/details': (context) => SummonerDetailsPage()
         //'/second': (context) => SecondScreen(),
       },
     );

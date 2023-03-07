@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
+import 'package:flutter_riot_api/screens/summoner_details.dart';
 
 class SummonerInfo extends StatelessWidget {
   const SummonerInfo({super.key});
@@ -7,48 +8,56 @@ class SummonerInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
-    return Container(
-      margin: const EdgeInsets.only(top: 25, left: 20, right: 20, bottom: 10),
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(25),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.03),
-              spreadRadius: 10,
-              blurRadius: 3,
-              // changes position of shadow
-            ),
-          ]),
-      child: Padding(
-        padding:
-            const EdgeInsets.only(top: 20, bottom: 25, right: 20, left: 20),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildBoxIcon(Icons.refresh_outlined),
-                _buildBoxIcon(Icons.delete),
-              ],
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            Column(
-              children: [
-                _buildsummonerIcon(),
-                const SizedBox(
-                  height: 10,
-                ),
-                _buildSummonerBaseInfo(width),
-              ],
-            ),
-            const SizedBox(
-              height: 50,
-            ),
-            _buildMatchStats(),
-          ],
+    return InkWell(
+      onTap: () => {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SummonerDetailsPage()),
+        )
+      },
+      child: Container(
+        margin: const EdgeInsets.only(top: 25, left: 20, right: 20, bottom: 10),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(25),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.03),
+                spreadRadius: 10,
+                blurRadius: 3,
+                // changes position of shadow
+              ),
+            ]),
+        child: Padding(
+          padding:
+              const EdgeInsets.only(top: 20, bottom: 25, right: 20, left: 20),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildBoxIcon(Icons.refresh_outlined),
+                  _buildBoxIcon(Icons.delete),
+                ],
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              Column(
+                children: [
+                  _buildsummonerIcon(),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  _buildSummonerBaseInfo(width),
+                ],
+              ),
+              const SizedBox(
+                height: 50,
+              ),
+              _buildMatchStats(),
+            ],
+          ),
         ),
       ),
     );
