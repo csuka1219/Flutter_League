@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
 
@@ -18,8 +17,8 @@ class CustomAppBar extends StatelessWidget {
           Expanded(
             child: Text(
               'JánosBook',
-              style: const TextStyle(
-                color: Color.fromARGB(255, 241, 196, 15),
+              style: TextStyle(
+                color: ColorPalette().secondary,
                 fontSize: 32.0,
                 fontWeight: FontWeight.bold,
                 letterSpacing: -1.2,

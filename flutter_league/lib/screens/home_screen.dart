@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
-import 'package:flutter_riot_api/widgets/sumonner_info.dart';
+import 'package:flutter_riot_api/widgets/summoner_info.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_riot_api/providers/drop_provider.dart';
 import 'package:flutter_riot_api/widgets/custom_appbar.dart';

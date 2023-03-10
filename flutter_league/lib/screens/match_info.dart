@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
+import 'package:flutter_riot_api/screens/match_details.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class MatchInfoPage extends StatelessWidget {
@@ -19,9 +20,15 @@ class MatchInfoPage extends StatelessWidget {
         actions: [
           IconButton(
             color: ColorPalette().secondary,
-            icon: Icon(Icons.bar_chart),
-            onPressed: () {
-              // Navigate to match graphs page
+            icon: Icon(
+              Icons.bar_chart,
+              color: Colors.green[400],
+            ),
+            onPressed: () => {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MatchDetailsPage()),
+              ),
             },
           ),
         ],
@@ -235,7 +242,7 @@ class MatchInfoPage extends StatelessWidget {
                     children: [
                       Text(
                         "120 CS(6.1)",
-                        style: TextStyle(fontSize: 8),
+                        style: TextStyle(fontSize: 9),
                       ),
                       SizedBox(width: 5),
                       Text(
