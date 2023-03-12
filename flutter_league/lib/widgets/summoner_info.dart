@@ -8,29 +8,29 @@ class SummonerInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
-    return InkWell(
-      onTap: () => {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => SummonerDetailsPage()),
-        )
-      },
-      child: Container(
-        margin: const EdgeInsets.only(top: 25, left: 20, right: 20, bottom: 10),
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(25),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.03),
-                spreadRadius: 10,
-                blurRadius: 3,
-                // changes position of shadow
-              ),
-            ]),
-        child: Padding(
-          padding:
-              const EdgeInsets.only(top: 20, bottom: 25, right: 20, left: 20),
+    return Container(
+      margin: const EdgeInsets.only(top: 25, left: 20, right: 20, bottom: 10),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.03),
+              spreadRadius: 10,
+              blurRadius: 3,
+              // changes position of shadow
+            ),
+          ]),
+      child: Padding(
+        padding:
+            const EdgeInsets.only(top: 20, bottom: 25, right: 20, left: 20),
+        child: InkWell(
+          onTap: () => {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SummonerDetailsPage()),
+            ),
+          },
           child: Column(
             children: [
               Row(
