@@ -14,57 +14,71 @@ class SummonerDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool startSoloQueue = summonerInfo.soloRank != null ||
+        (summonerInfo.soloRank == null && summonerInfo.flexRank == null);
     return Scaffold(
       appBar: _buildAppBar(),
       body: ChangeNotifierProvider(
-        create: (_) => MatchHistoryData(),
-        child: Column(
-          children: [
-            // Header section
-            _buildSummonerHeader(context),
-            SizedBox(
-              height: 10,
-            ),
-            // Match history section
-            Expanded(
-              child: Consumer<MatchHistoryData>(
-                builder: (context, matchHistoryData, child) {
-                  if (matchHistoryData.matchHistory.isEmpty) {
-                    matchHistoryData.matchNumber = 0;
-                    matchHistoryData.fetchData(
-                        summonerInfo.puuid,
-                        summonerInfo.name,
-                        false,
-                        true); // Call the fetch method to load data
-                    return Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  } else {
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        if (!context.read<MatchHistoryData>().isLoading) {
-                          matchHistoryData.isLoading = true;
-                          matchHistoryData.matchNumber = 0;
-                          matchHistoryData.fetchData(summonerInfo.puuid,
-                              summonerInfo.name, false, true);
-                          matchHistoryData.isLoading = false;
-                        }
-                      },
-                      child: ListView.builder(
-                        itemCount: matchHistoryData.matchHistory.length + 1,
-                        itemBuilder: (BuildContext context, int index) {
-                          return index != matchHistoryData.matchHistory.length
-                              ? _buildMatchListItem(context,
-                                  matchHistoryData.matchHistory[index]!)
-                              : _buildLoadMoreButton(context, matchHistoryData);
-                        },
-                      ),
-                    );
-                  }
-                },
-              ),
-            ),
-          ],
+        create: (_) => MatchHistoryData(startSoloQueue),
+        child: Consumer<MatchHistoryData>(
+          builder: (context, matchHistoryData, child) {
+            return Column(
+              children: [
+                // Header section
+                ((context.read<MatchHistoryData>().isSoloQueue &&
+                            summonerInfo.soloRank == null) ||
+                        (!context.read<MatchHistoryData>().isSoloQueue &&
+                            summonerInfo.flexRank == null))
+                    ? _buildUnrankedSummonerHeader(context)
+                    : _buildSummonerHeader(context),
+
+                SizedBox(
+                  height: 10,
+                ),
+                // Match history section
+                Expanded(
+                  child: Consumer<MatchHistoryData>(
+                    builder: (context, matchHistoryData, child) {
+                      if (matchHistoryData.matchHistory.isEmpty) {
+                        matchHistoryData.matchNumber = 0;
+                        matchHistoryData.fetchData(
+                            summonerInfo.puuid,
+                            summonerInfo.name,
+                            false,
+                            true); // Call the fetch method to load data
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else {
+                        return RefreshIndicator(
+                          onRefresh: () async {
+                            if (!context.read<MatchHistoryData>().isLoading) {
+                              matchHistoryData.isLoading = true;
+                              matchHistoryData.matchNumber = 0;
+                              matchHistoryData.fetchData(summonerInfo.puuid,
+                                  summonerInfo.name, false, true);
+                              matchHistoryData.isLoading = false;
+                            }
+                          },
+                          child: ListView.builder(
+                            itemCount: matchHistoryData.matchHistory.length + 1,
+                            itemBuilder: (BuildContext context, int index) {
+                              return index !=
+                                      matchHistoryData.matchHistory.length
+                                  ? _buildMatchListItem(context,
+                                      matchHistoryData.matchHistory[index]!)
+                                  : _buildLoadMoreButton(
+                                      context, matchHistoryData);
+                            },
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -85,7 +99,6 @@ class SummonerDetailsPage extends StatelessWidget {
 
   //TODO soloq után egy lenyíló hogy lehessen váltani flexre
   Widget _buildSummonerHeader(BuildContext context) {
-    //context.read<MatchHistoryData>().isSoloQueue=summonerInfo.soloRank!=null;
     return Container(
       padding: EdgeInsets.all(16.0),
       color: Colors.white,
@@ -111,7 +124,9 @@ class SummonerDetailsPage extends StatelessWidget {
                 children: [
                   // Rank name
                   Text(
-                    context.watch<MatchHistoryData>().isSoloQueue?"${summonerInfo.soloRank?.tier} ${summonerInfo.soloRank?.rank}":"${summonerInfo.flexRank?.tier} ${summonerInfo.flexRank?.rank}",
+                    context.watch<MatchHistoryData>().isSoloQueue
+                        ? "${summonerInfo.soloRank?.tier} ${summonerInfo.soloRank?.rank}"
+                        : "${summonerInfo.flexRank?.tier} ${summonerInfo.flexRank?.rank}",
                     style: TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
@@ -137,7 +152,87 @@ class SummonerDetailsPage extends StatelessWidget {
               context.read<MatchHistoryData>().deniesisSoloQueue();
             },
             child: Text(
-              context.watch<MatchHistoryData>().isSoloQueue?'Solo/Duo':'Flex',
+              context.watch<MatchHistoryData>().isSoloQueue
+                  ? 'Solo/Duo'
+                  : 'Flex',
+              style: TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          // Refresh and graph buttons
+          Row(
+            children: [
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  //TODO live game
+                  backgroundColor: !true ? Colors.grey[600] : Colors.green,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.0),
+                  ),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+                ),
+                child: Text(
+                  'LIVE',
+                  style: TextStyle(
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              )
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUnrankedSummonerHeader(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(16.0),
+      color: Colors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              // Rank icon
+              Container(
+                width: 32.0,
+                height: 32.0,
+                color: Colors.grey[200],
+              ),
+              SizedBox(width: 8.0),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Rank name
+                  Text(
+                    "Unranked",
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // Solo/Duo or Flex
+          GestureDetector(
+            onTap: () {
+              context.read<MatchHistoryData>().deniesisSoloQueue();
+            },
+            child: Text(
+              context.watch<MatchHistoryData>().isSoloQueue
+                  ? 'Solo/Duo'
+                  : 'Flex',
               style: TextStyle(
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
@@ -454,17 +549,19 @@ class SummonerDetailsPage extends StatelessWidget {
   }
 
   String getWinrate(bool isSoloQueue) {
-    return isSoloQueue? ((summonerInfo.soloRank!.wins! /
-                (summonerInfo.soloRank!.wins! +
-                    summonerInfo.soloRank!.losses!)) *
-            100)
-        .round()
-        .toString():((summonerInfo.flexRank!.wins! /
-                (summonerInfo.flexRank!.wins! +
-                    summonerInfo.flexRank!.losses!)) *
-            100)
-        .round()
-        .toString();
+    return isSoloQueue
+        ? ((summonerInfo.soloRank!.wins! /
+                    (summonerInfo.soloRank!.wins! +
+                        summonerInfo.soloRank!.losses!)) *
+                100)
+            .round()
+            .toString()
+        : ((summonerInfo.flexRank!.wins! /
+                    (summonerInfo.flexRank!.wins! +
+                        summonerInfo.flexRank!.losses!)) *
+                100)
+            .round()
+            .toString();
   }
 
   String getKdaAvg(int k, int d, int a) {

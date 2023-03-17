@@ -5,6 +5,10 @@ import 'package:flutter_riot_api/services/match_preview_service.dart';
 import 'package:http/http.dart' as http;
 
 class MatchHistoryData with ChangeNotifier {
+  MatchHistoryData(bool isSoloQueue) {
+    _isSoloQueue = isSoloQueue;
+  }
+
   List<MatchPreview?> _matchHistory = [];
 
   List<MatchPreview?> get matchHistory => _matchHistory;
@@ -38,9 +42,14 @@ class MatchHistoryData with ChangeNotifier {
     _isSoloQueue = value;
     notifyListeners();
   }
+
   void deniesisSoloQueue() {
     _isSoloQueue = !_isSoloQueue;
     notifyListeners();
+  }
+
+  void initisSoloQueue(bool value) {
+    _isSoloQueue = value;
   }
 
   List<String> matches = [];
@@ -56,7 +65,7 @@ class MatchHistoryData with ChangeNotifier {
     }
     if (loadNew) {
       await fetchMatchIds(puuid);
-      _matchHistory=[];
+      _matchHistory = [];
     }
     final List<MatchPreview?> loadedData = [];
     if (matches.isEmpty) return;
