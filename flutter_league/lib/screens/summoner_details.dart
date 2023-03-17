@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
-import 'package:flutter_riot_api/model/match_preview.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
-import 'package:flutter_riot_api/screens/match_info.dart';
+import 'package:flutter_riot_api/widgets/match_item.dart';
 import 'package:provider/provider.dart';
-
 import '../providers/matchhistory_provider.dart';
+
+//TODO appbar jobb felső sarok kedvencemnek választás
+//TODO live game betöltés
 
 class SummonerDetailsPage extends StatelessWidget {
   final Summoner summonerInfo;
@@ -14,68 +15,72 @@ class SummonerDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Determine whether to show solo or flex rank, or neither
     bool startSoloQueue = summonerInfo.soloRank != null ||
         (summonerInfo.soloRank == null && summonerInfo.flexRank == null);
+
     return Scaffold(
+      // Build the app bar
       appBar: _buildAppBar(),
       body: ChangeNotifierProvider(
+        // Provide the MatchHistoryData to the widget tree
         create: (_) => MatchHistoryData(startSoloQueue),
         child: Consumer<MatchHistoryData>(
+          // Consume the MatchHistoryData from the widget tree
           builder: (context, matchHistoryData, child) {
+            if (matchHistoryData.matchHistory.isEmpty) {
+              // If the match history is empty, fetch data and show loading indicator
+              matchHistoryData.matchNumber = 0;
+              matchHistoryData.fetchData(
+                  summonerInfo.puuid, summonerInfo.name, false, true);
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            // Otherwise, build the column widget
             return Column(
               children: [
-                // Header section
+                // Show an unranked summoner header if the summoner doesn't have a rank in the selected queue
                 ((context.read<MatchHistoryData>().isSoloQueue &&
                             summonerInfo.soloRank == null) ||
                         (!context.read<MatchHistoryData>().isSoloQueue &&
                             summonerInfo.flexRank == null))
                     ? _buildUnrankedSummonerHeader(context)
-                    : _buildSummonerHeader(context),
+                    : _buildSummonerHeader(
+                        context, context.read<MatchHistoryData>().isSoloQueue),
 
                 SizedBox(
                   height: 10,
                 ),
-                // Match history section
+
+                // Build the match history section
                 Expanded(
-                  child: Consumer<MatchHistoryData>(
-                    builder: (context, matchHistoryData, child) {
-                      if (matchHistoryData.matchHistory.isEmpty) {
-                        matchHistoryData.matchNumber = 0;
-                        matchHistoryData.fetchData(
-                            summonerInfo.puuid,
-                            summonerInfo.name,
-                            false,
-                            true); // Call the fetch method to load data
-                        return Center(
-                          child: CircularProgressIndicator(),
-                        );
+                    child: RefreshIndicator(
+                  // Add the onRefresh callback to fetch new data
+                  onRefresh: () async {
+                    if (!context.read<MatchHistoryData>().isLoading) {
+                      matchHistoryData.isLoading = true;
+                      matchHistoryData.matchNumber = 0;
+                      matchHistoryData.fetchData(
+                          summonerInfo.puuid, summonerInfo.name, false, true);
+                      matchHistoryData.isLoading = false;
+                    }
+                  },
+                  child: ListView.builder(
+                    // Set the item count to the number of matches + 1
+                    itemCount: matchHistoryData.matchHistory.length + 1,
+                    // Build the list item for each match or the load more button
+                    itemBuilder: (BuildContext context, int index) {
+                      if (index != matchHistoryData.matchHistory.length) {
+                        return MatchItem(
+                            matchHistory:
+                                matchHistoryData.matchHistory[index]!);
                       } else {
-                        return RefreshIndicator(
-                          onRefresh: () async {
-                            if (!context.read<MatchHistoryData>().isLoading) {
-                              matchHistoryData.isLoading = true;
-                              matchHistoryData.matchNumber = 0;
-                              matchHistoryData.fetchData(summonerInfo.puuid,
-                                  summonerInfo.name, false, true);
-                              matchHistoryData.isLoading = false;
-                            }
-                          },
-                          child: ListView.builder(
-                            itemCount: matchHistoryData.matchHistory.length + 1,
-                            itemBuilder: (BuildContext context, int index) {
-                              return index !=
-                                      matchHistoryData.matchHistory.length
-                                  ? _buildMatchListItem(context,
-                                      matchHistoryData.matchHistory[index]!)
-                                  : _buildLoadMoreButton(
-                                      context, matchHistoryData);
-                            },
-                          ),
-                        );
+                        return _buildLoadMoreButton(context, matchHistoryData);
                       }
                     },
                   ),
-                ),
+                )),
               ],
             );
           },
@@ -97,14 +102,30 @@ class SummonerDetailsPage extends StatelessWidget {
     );
   }
 
-  //TODO soloq után egy lenyíló hogy lehessen váltani flexre
-  Widget _buildSummonerHeader(BuildContext context) {
+  // Builds the header widget for the summoner info screen.
+  // The isSoloQueue parameter determines whether to display data for solo queue or flex queue.
+  Widget _buildSummonerHeader(BuildContext context, bool isSoloQueue) {
+    // Get the league points (LP) and win rate based on the queue type
+    final lp = isSoloQueue
+        ? summonerInfo.soloRank?.leaguePoints // If solo queue, get solo rank LP
+        : summonerInfo
+            .flexRank?.leaguePoints; // If flex queue, get flex rank LP
+    final winRate = getWinrate(isSoloQueue);
+
+    // Get the rank tier, rank (e.g. Platinum IV), based on the queue type
+    final rankTier =
+        isSoloQueue ? summonerInfo.soloRank?.tier : summonerInfo.flexRank?.tier;
+    final rank =
+        isSoloQueue ? summonerInfo.soloRank?.rank : summonerInfo.flexRank?.rank;
+
+    // Return the header widget with the summoner rank and LP, win rate, and queue type
     return Container(
       padding: EdgeInsets.all(16.0),
       color: Colors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // Display the rank icon and rank name
           Row(
             children: [
               // Rank icon
@@ -113,8 +134,7 @@ class SummonerDetailsPage extends StatelessWidget {
                 height: 32.0,
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(
-                        "assets/ranks/${context.watch<MatchHistoryData>().isSoloQueue ? summonerInfo.soloRank?.tier : summonerInfo.flexRank?.tier}.png"),
+                    image: AssetImage("assets/ranks/$rankTier.png"),
                   ),
                 ),
               ),
@@ -122,21 +142,18 @@ class SummonerDetailsPage extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Rank name
+                  // Rank name (e.g. Platinum IV)
                   Text(
-                    context.watch<MatchHistoryData>().isSoloQueue
-                        ? "${summonerInfo.soloRank?.tier} ${summonerInfo.soloRank?.rank}"
-                        : "${summonerInfo.flexRank?.tier} ${summonerInfo.flexRank?.rank}",
+                    '$rankTier $rank',
                     style: TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
-                  // LP and winrate
+                  // LP and win rate (e.g. 95 LP, 60% WR)
                   Text(
-                    //todo különszedni winrate alapján más színű text
-                    "${context.watch<MatchHistoryData>().isSoloQueue ? summonerInfo.soloRank?.leaguePoints : summonerInfo.flexRank?.leaguePoints} LP,  ${getWinrate(context.watch<MatchHistoryData>().isSoloQueue)}% WR",
+                    '$lp LP, $winRate% WR',
                     style: TextStyle(
                       fontSize: 14.0,
                       color: Colors.grey[600],
@@ -146,15 +163,13 @@ class SummonerDetailsPage extends StatelessWidget {
               ),
             ],
           ),
-          // Solo/Duo or Flex
+          // Display the queue type (e.g. Solo/Duo or Flex) with an onTap listener to switch between them
           GestureDetector(
             onTap: () {
               context.read<MatchHistoryData>().deniesisSoloQueue();
             },
             child: Text(
-              context.watch<MatchHistoryData>().isSoloQueue
-                  ? 'Solo/Duo'
-                  : 'Flex',
+              isSoloQueue ? 'Solo/Duo' : 'Flex',
               style: TextStyle(
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
@@ -162,13 +177,13 @@ class SummonerDetailsPage extends StatelessWidget {
               ),
             ),
           ),
-          // Refresh and graph buttons
+          // Display the "Live" button (TODO: implement the live game functionality)
           Row(
             children: [
               ElevatedButton(
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
-                  //TODO live game
+                  //TODO: live game - Set the background color based on whether a live game is available or not
                   backgroundColor: !true ? Colors.grey[600] : Colors.green,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16.0),
@@ -199,9 +214,9 @@ class SummonerDetailsPage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // Rank icon and text
           Row(
             children: [
-              // Rank icon
               Container(
                 width: 32.0,
                 height: 32.0,
@@ -270,308 +285,90 @@ class SummonerDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMatchListItem(BuildContext context, MatchPreview matchHistory) {
-    return InkWell(
-      onTap: () => {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => MatchInfoPage()),
-        )
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: matchHistory.playerStats.win == true
-                ? Color.fromARGB(255, 190, 226, 255)
-                : Color.fromARGB(255, 255, 116, 116),
-          ),
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Champion icon
-              Column(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      image: DecorationImage(
-                        image: AssetImage(
-                          "assets/champions/${matchHistory.playerStats.championName}.png",
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  // Summoner spells
-                  Row(
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(6),
-                          image: DecorationImage(
-                            image: AssetImage(
-                              "assets/spells/${matchHistory.playerStats.summoner1Id}.png",
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 4),
-                      Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(6),
-                          image: DecorationImage(
-                            image: AssetImage(
-                              "assets/spells/${matchHistory.playerStats.summoner2Id}.png",
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Game mode and match length
-                  Row(
-                    children: [
-                      Text(
-                        "${getGameModeByQueueId(matchHistory.queueId)}",
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        " - ${getFormattedDuration(matchHistory.gameDuration)}",
-                        style: TextStyle(
-                          fontSize: 14,
-                        ),
-                      ),
-                      Icon(Icons.schedule, color: Colors.grey[600], size: 14.0),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  // KDA
-                  Row(
-                    children: [
-                      matchHistory.playerStats.role.isNotEmpty
-                          ? Container(
-                              width: 20.0,
-                              height: 20.0,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                  image: AssetImage(
-                                      "assets/roles/${matchHistory.playerStats.role}.png"),
-                                ),
-                              ),
-                            )
-                          : Container(),
-                      SizedBox(
-                          width:
-                              matchHistory.playerStats.role.isNotEmpty ? 4 : 0),
-                      Text(
-                        "${matchHistory.playerStats.kills} / ",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        "${matchHistory.playerStats.deaths}",
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 198, 24, 65),
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        " / ${matchHistory.playerStats.assists}",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 5,
-                      ),
-                      // Text(
-                      //   getKdaAvg(
-                      //           matchHistory.playerStats.kills,
-                      //           matchHistory.playerStats.deaths,
-                      //           matchHistory.playerStats.assists) +
-                      //       " KDA",
-                      //   style: TextStyle(
-                      //     color: Color.fromARGB(255, 94, 94, 94),
-                      //   ),
-                      // ),
-                      // SizedBox(
-                      //   width: 5,
-                      // ),
-                      Text(
-                        "${matchHistory.playerStats.totalCS}" + " CS",
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 94, 94, 94),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  // Match items
-                  Row(
-                    children: [
-                      for (var i = 0;
-                          i < matchHistory.playerStats.items.length - 1;
-                          i++)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 2.0),
-                          child: matchHistory.playerStats.items[i] != 0
-                              ? Container(
-                                  width: 25.0,
-                                  height: 25.0,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                    image: DecorationImage(
-                                      image: AssetImage(
-                                          "assets/items/${matchHistory.playerStats.items[i]}.png"),
-                                    ),
-                                  ),
-                                )
-                              : Container(
-                                  width: 25.0,
-                                  height: 25.0,
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: ColorPalette().primary),
-                                ),
-                        ),
-                      Container(
-                        width: 25.0,
-                        height: 25.0,
-                        decoration: matchHistory.playerStats.item6 != 0
-                            ? BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                  image: AssetImage(
-                                      "assets/items/${matchHistory.playerStats.item6}.png"),
-                                ),
-                              )
-                            : const BoxDecoration(),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              Spacer(),
-              // Rune pages
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: ColorPalette().primary,
-                      image: DecorationImage(
-                        image: AssetImage(
-                          "assets/runes/${matchHistory.perks.primaryStyle}.png",
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage(
-                          "assets/runes/${matchHistory.perks.secondaryStyle}.png",
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
+  // This method returns a widget that displays either a progress indicator or
+// a button to load more data, depending on whether the match history data is
+// currently being loaded or not.
   Widget _buildLoadMoreButton(
       BuildContext context, MatchHistoryData matchHistoryData) {
+    // The Container widget provides margin around the button or progress
     return Container(
       margin: EdgeInsets.symmetric(vertical: 12.0),
-      child: context.watch<MatchHistoryData>().isLoading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  matchHistoryData.fetchData(
-                      summonerInfo.puuid, summonerInfo.name, true);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ColorPalette().primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
+      child:
+
+          // If the match history data is currently being loaded, display a
+          context.watch<MatchHistoryData>().isLoading
+              ? Center(
+                  child: CircularProgressIndicator(),
+                )
+
+              // If the match history data is not being loaded, display an
+              : Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // When the button is pressed, call the fetchData method of
+                      // the matchHistoryData object to load more data.
+                      matchHistoryData.fetchData(
+                          summonerInfo.puuid, summonerInfo.name, true);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorPalette().primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 32.0, vertical: 12.0),
+                    ),
+                    child: Text(
+                      'Load More',
+                      style: TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 32.0, vertical: 12.0),
                 ),
-                child: Text(
-                  'Load More',
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
     );
   }
 
+  /// Returns a formatted string representing the winrate of the summoner in
+  /// either solo queue or flex queue.
+  ///
+  /// If `isSoloQueue` is true, the method will calculate the winrate based on the
+  /// summoner's solo queue rank, otherwise it will calculate based on their flex
+  /// queue rank.
   String getWinrate(bool isSoloQueue) {
-    return isSoloQueue
-        ? ((summonerInfo.soloRank!.wins! /
-                    (summonerInfo.soloRank!.wins! +
-                        summonerInfo.soloRank!.losses!)) *
-                100)
-            .round()
-            .toString()
-        : ((summonerInfo.flexRank!.wins! /
-                    (summonerInfo.flexRank!.wins! +
-                        summonerInfo.flexRank!.losses!)) *
-                100)
-            .round()
-            .toString();
+    // Calculate winrate based on the selected queue type
+    double winrate = isSoloQueue
+        ? summonerInfo.soloRank!.wins! /
+            (summonerInfo.soloRank!.wins! + summonerInfo.soloRank!.losses!)
+        : summonerInfo.flexRank!.wins! /
+            (summonerInfo.flexRank!.wins! + summonerInfo.flexRank!.losses!);
+
+    // Round the winrate to the nearest integer and convert it to a string
+    String winrateString = (winrate * 100).round().toString();
+
+    return winrateString;
   }
 
   String getKdaAvg(int k, int d, int a) {
     return ((k + a) / d).toStringAsFixed(2);
   }
 
+  // Returns a formatted string for game duration
   String getFormattedDuration(int gameDurationInSeconds) {
-    return "${(gameDurationInSeconds / 60).floor()}m ${(gameDurationInSeconds % 60).toString().padLeft(2, '0')}s";
+    // Convert game duration in seconds to minutes and round down
+    int minutes = (gameDurationInSeconds / 60).floor();
+
+    // Calculate remaining seconds and pad with leading zero if necessary
+    int seconds = gameDurationInSeconds % 60;
+    String formattedSeconds = seconds.toString().padLeft(2, '0');
+
+    // Combine minutes and seconds into formatted string
+    return "${minutes}m ${formattedSeconds}s";
   }
 
+// This function maps the queueId to the corresponding game mode name
   String getGameModeByQueueId(int queueId) {
     final Map<int, String> gameModes = {
       0: 'Custom',
@@ -587,6 +384,8 @@ class SummonerDetailsPage extends StatelessWidget {
       2000: 'TFT',
       2010: 'TFT Ranked',
     };
+
+// Return the game mode name for the given queueId
     return gameModes[queueId]!;
   }
 }
