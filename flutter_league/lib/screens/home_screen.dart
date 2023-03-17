@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
+import 'package:flutter_riot_api/model/summoner.dart';
+import 'package:flutter_riot_api/screens/summoner_details.dart';
+import 'package:flutter_riot_api/services/match_preview_service.dart';
+import 'package:flutter_riot_api/services/summoner_service.dart';
 import 'package:flutter_riot_api/widgets/summoner_info.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_riot_api/providers/drop_provider.dart';
@@ -35,7 +39,7 @@ class HomeScreen extends StatelessWidget {
                       SizedBox(
                         height: 20,
                       ),
-                      _buildSearchBar(width),
+                      _buildSearchBar(context, width),
                       _buildSummonerInfo(),
                       _buildSummonerInfo(),
                     ],
@@ -68,7 +72,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchBar(double width) {
+  Widget _buildSearchBar(BuildContext context, double width) {
+    String summonerName = "";
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -83,11 +88,35 @@ class HomeScreen extends StatelessWidget {
             children: [
               IconButton(
                 icon: Icon(Icons.search, color: ColorPalette().primary),
-                onPressed: () => {},
+                onPressed: () async {
+                  Summoner? summonerInfo = await getSummonerByName(
+                    context.read<DropDownProvider>().summomnerName,
+                  );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => SummonerDetailsPage(
+                              summonerInfo: summonerInfo!,
+                            )),
+                  );
+                },
               ),
               Expanded(
                 child: TextField(
-                  //onChanged: onTextChanged,
+                  onSubmitted: (value) async {
+                    Summoner? summonerInfo = await getSummonerByName(value);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          //TODO nem létező summoner
+                          builder: (context) => SummonerDetailsPage(
+                                summonerInfo: summonerInfo!,
+                              )),
+                    );
+                  },
+                  onChanged: (value) {
+                    context.read<DropDownProvider>().summomnerName = value;
+                  },
                   decoration: InputDecoration(
                     hintText: "Search Summoner",
                     border: InputBorder.none,
@@ -113,27 +142,28 @@ class HomeScreen extends StatelessWidget {
       left: 0,
       right: 0,
       child: Container(
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
-                spreadRadius: 1,
-                blurRadius: 10,
-                offset: Offset(0, 1),
-              ),
-            ],
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 1,
+              blurRadius: 10,
+              offset: Offset(0, 1),
             ),
-            color: Colors.white,
+          ],
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
           ),
-          height: height * 0.5,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [_buildTitleBar(context), _buildDropdownList(context)],
-            ),
-          )),
+          color: Colors.white,
+        ),
+        height: height * 0.5,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [_buildTitleBar(context), _buildDropdownList(context)],
+          ),
+        ),
+      ),
     );
   }
 

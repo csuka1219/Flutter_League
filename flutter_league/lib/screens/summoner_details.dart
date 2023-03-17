@@ -1,29 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
+import 'package:flutter_riot_api/model/match_preview.dart';
+import 'package:flutter_riot_api/model/summoner.dart';
 import 'package:flutter_riot_api/screens/match_info.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/matchhistory_provider.dart';
 
 class SummonerDetailsPage extends StatelessWidget {
+  final Summoner summonerInfo;
+
+  const SummonerDetailsPage({super.key, required this.summonerInfo});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          // Header section
-          _buildSummonerHeader(),
-          SizedBox(
-            height: 10,
-          ),
-          // Match history section
-          Expanded(
-            child: ListView.builder(
-              itemCount: 10, // TODO: Replace with actual match history data
-              itemBuilder: (BuildContext context, int index) {
-                return _buildMatchListItem(context);
-              },
+      body: ChangeNotifierProvider(
+        create: (_) => MatchHistoryData(),
+        child: Column(
+          children: [
+            // Header section
+            _buildSummonerHeader(),
+            SizedBox(
+              height: 10,
             ),
-          ),
-        ],
+            // Match history section
+            Expanded(
+              child: Consumer<MatchHistoryData>(
+                builder: (context, matchHistoryData, child) {
+                  if (matchHistoryData.matchHistory.isEmpty) {
+                    matchHistoryData.matchNumber = 0;
+                    matchHistoryData.fetchData(
+                        summonerInfo.puuid,
+                        summonerInfo.name,
+                        false,
+                        true); // Call the fetch method to load data
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else {
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        matchHistoryData.matchNumber = 0;
+                        matchHistoryData.fetchData(
+                            summonerInfo.puuid, summonerInfo.name, false, true);
+                      },
+                      child: ListView.builder(
+                        itemCount: matchHistoryData.matchHistory.length + 1,
+                        itemBuilder: (BuildContext context, int index) {
+                          return index != matchHistoryData.matchHistory.length
+                              ? _buildMatchListItem(context,
+                                  matchHistoryData.matchHistory[index]!)
+                              : _buildLoadMoreButton(context, matchHistoryData);
+                        },
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -35,7 +73,7 @@ class SummonerDetailsPage extends StatelessWidget {
       ),
       backgroundColor: ColorPalette().primary,
       title: Text(
-        'Summoner Details',
+        summonerInfo.name,
         style: TextStyle(color: ColorPalette().secondary),
       ),
     );
@@ -56,9 +94,10 @@ class SummonerDetailsPage extends StatelessWidget {
                 width: 32.0,
                 height: 32.0,
                 decoration: BoxDecoration(
-                    image: DecorationImage(
-                        image: NetworkImage(
-                            "https://opgg-static.akamaized.net/images/medals_new/gold.png?image=q_auto,f_webp,w_144&v=1678078753677"))),
+                  image: DecorationImage(
+                    image: AssetImage("assets/ranks/${summonerInfo.tier}.png"),
+                  ),
+                ),
               ),
               SizedBox(width: 8.0),
               Column(
@@ -66,7 +105,7 @@ class SummonerDetailsPage extends StatelessWidget {
                 children: [
                   // Rank name
                   Text(
-                    'Gold II',
+                    "${summonerInfo.tier} ${summonerInfo.rank}",
                     style: TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
@@ -75,7 +114,8 @@ class SummonerDetailsPage extends StatelessWidget {
                   ),
                   // LP and winrate
                   Text(
-                    '54 LP, 60% WR',
+                    //todo különszedni winrate alapján más színű text
+                    "${summonerInfo.leaguePoints} LP,  ${getWinrate()}% WR",
                     style: TextStyle(
                       fontSize: 14.0,
                       color: Colors.grey[600],
@@ -101,10 +141,6 @@ class SummonerDetailsPage extends StatelessWidget {
                 icon: Icon(Icons.refresh),
                 onPressed: () {},
               ),
-              IconButton(
-                icon: Icon(Icons.graphic_eq),
-                onPressed: () {},
-              ),
             ],
           ),
         ],
@@ -112,7 +148,7 @@ class SummonerDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMatchListItem(BuildContext context) {
+  Widget _buildMatchListItem(BuildContext context, MatchPreview matchHistory) {
     return InkWell(
       onTap: () => {
         Navigator.push(
@@ -125,7 +161,9 @@ class SummonerDetailsPage extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: Color.fromARGB(255, 190, 226, 255),
+            color: matchHistory.playerStats.win == true
+                ? Color.fromARGB(255, 190, 226, 255)
+                : Color.fromARGB(255, 255, 116, 116),
           ),
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
@@ -135,13 +173,13 @@ class SummonerDetailsPage extends StatelessWidget {
               Column(
                 children: [
                   Container(
-                    width: 60,
-                    height: 60,
+                    width: 50,
+                    height: 50,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       image: DecorationImage(
-                        image: NetworkImage(
-                          "https://opgg-static.akamaized.net/meta/images/lol/champion/Kaisa.png?image=c_crop,h_103,w_103,x_9,y_9/q_auto,f_webp,w_96&v=1678078753492",
+                        image: AssetImage(
+                          "assets/champions/${matchHistory.playerStats.championName}.png",
                         ),
                       ),
                     ),
@@ -156,8 +194,8 @@ class SummonerDetailsPage extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(6),
                           image: DecorationImage(
-                            image: NetworkImage(
-                              "https://opgg-static.akamaized.net/meta/images/lol/spell/SummonerFlash.png?image=q_auto,f_webp,w_44&v=1678078753492",
+                            image: AssetImage(
+                              "assets/spells/${matchHistory.playerStats.summoner1Id}.png",
                             ),
                           ),
                         ),
@@ -169,8 +207,8 @@ class SummonerDetailsPage extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(6),
                           image: DecorationImage(
-                            image: NetworkImage(
-                              "https://opgg-static.akamaized.net/meta/images/lol/spell/SummonerExhaust.png?image=q_auto,f_webp,w_44&v=1678078753492",
+                            image: AssetImage(
+                              "assets/spells/${matchHistory.playerStats.summoner2Id}.png",
                             ),
                           ),
                         ),
@@ -184,19 +222,87 @@ class SummonerDetailsPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Game mode and match length
-                  Text(
-                    "{gameMode} - {matchLength}",
-                    style: TextStyle(fontSize: 14),
+                  Row(
+                    children: [
+                      Text(
+                        "${getGameModeByQueueId(matchHistory.queueId)}",
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w500),
+                      ),
+                      Text(
+                        " - ${getFormattedDuration(matchHistory.gameDuration)}",
+                        style: TextStyle(
+                          fontSize: 14,
+                        ),
+                      ),
+                      Icon(Icons.schedule, color: Colors.grey[600], size: 14.0),
+                    ],
                   ),
                   SizedBox(height: 8),
                   // KDA
                   Row(
                     children: [
-                      Icon(Icons.star, color: Colors.yellow, size: 18),
-                      SizedBox(width: 4),
+                      matchHistory.playerStats.role.isNotEmpty
+                          ? Container(
+                              width: 20.0,
+                              height: 20.0,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                  image: AssetImage(
+                                      "assets/roles/${matchHistory.playerStats.role}.png"),
+                                ),
+                              ),
+                            )
+                          : Container(),
+                      SizedBox(
+                          width:
+                              matchHistory.playerStats.role.isNotEmpty ? 4 : 0),
                       Text(
-                        '{K}/{D}/{A} {avg}',
-                        style: TextStyle(fontSize: 16),
+                        "${matchHistory.playerStats.kills} / ",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "${matchHistory.playerStats.deaths}",
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 198, 24, 65),
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        " / ${matchHistory.playerStats.assists}",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      // Text(
+                      //   getKdaAvg(
+                      //           matchHistory.playerStats.kills,
+                      //           matchHistory.playerStats.deaths,
+                      //           matchHistory.playerStats.assists) +
+                      //       " KDA",
+                      //   style: TextStyle(
+                      //     color: Color.fromARGB(255, 94, 94, 94),
+                      //   ),
+                      // ),
+                      // SizedBox(
+                      //   width: 5,
+                      // ),
+                      Text(
+                        "${matchHistory.playerStats.totalCS}" + " CS",
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 94, 94, 94),
+                        ),
                       ),
                     ],
                   ),
@@ -204,31 +310,43 @@ class SummonerDetailsPage extends StatelessWidget {
                   // Match items
                   Row(
                     children: [
-                      for (var i = 0; i < 5; i++)
+                      for (var i = 0;
+                          i < matchHistory.playerStats.items.length - 1;
+                          i++)
                         Padding(
-                          padding: const EdgeInsets.only(right: 4.0),
-                          child: Container(
-                            width: 30.0,
-                            height: 30.0,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              image: DecorationImage(
-                                image: NetworkImage(
-                                    "https://opgg-static.akamaized.net/meta/images/lol/item/6671.png?image=q_auto,f_webp,w_44&v=1678078753492"),
-                              ),
-                            ),
-                          ),
+                          padding: const EdgeInsets.only(right: 2.0),
+                          child: matchHistory.playerStats.items[i] != 0
+                              ? Container(
+                                  width: 25.0,
+                                  height: 25.0,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    image: DecorationImage(
+                                      image: AssetImage(
+                                          "assets/items/${matchHistory.playerStats.items[i]}.png"),
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  width: 25.0,
+                                  height: 25.0,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: ColorPalette().primary),
+                                ),
                         ),
                       Container(
-                        width: 30.0,
-                        height: 30.0,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                            image: NetworkImage(
-                                "https://opgg-static.akamaized.net/meta/images/lol/item/3363.png?image=q_auto,f_webp,w_44&v=1678078753492"),
-                          ),
-                        ),
+                        width: 25.0,
+                        height: 25.0,
+                        decoration: matchHistory.playerStats.item6 != 0
+                            ? BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                  image: AssetImage(
+                                      "assets/items/${matchHistory.playerStats.item6}.png"),
+                                ),
+                              )
+                            : const BoxDecoration(),
                       ),
                     ],
                   ),
@@ -240,26 +358,26 @@ class SummonerDetailsPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: 28,
+                    height: 28,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: ColorPalette().primary,
                       image: DecorationImage(
-                        image: NetworkImage(
-                          "https://opgg-static.akamaized.net/meta/images/lol/perk/8008.png?image=q_auto,f_webp,w_44&v=1678078753492",
+                        image: AssetImage(
+                          "assets/runes/${matchHistory.perks.primaryStyle}.png",
                         ),
                       ),
                     ),
                   ),
                   SizedBox(height: 8),
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: 28,
+                    height: 28,
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: NetworkImage(
-                          "https://opgg-static.akamaized.net/meta/images/lol/perkStyle/8300.png?image=q_auto,f_webp,w_44&v=1678078753492",
+                        image: AssetImage(
+                          "assets/runes/${matchHistory.perks.secondaryStyle}.png",
                         ),
                       ),
                     ),
@@ -271,5 +389,73 @@ class SummonerDetailsPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildLoadMoreButton(
+      BuildContext context, MatchHistoryData matchHistoryData) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 12.0),
+      child: context.watch<MatchHistoryData>().isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  matchHistoryData.fetchData(
+                      summonerInfo.puuid, summonerInfo.name, true);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ColorPalette().primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.0),
+                  ),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 32.0, vertical: 12.0),
+                ),
+                child: Text(
+                  'Load More',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+    );
+  }
+
+  String getWinrate() {
+    return ((summonerInfo.wins! / (summonerInfo.wins! + summonerInfo.losses!)) *
+            100)
+        .round()
+        .toString();
+  }
+
+  String getKdaAvg(int k, int d, int a) {
+    return ((k + a) / d).toStringAsFixed(2);
+  }
+
+  String getFormattedDuration(int gameDurationInSeconds) {
+    return "${(gameDurationInSeconds / 60).floor()}m ${(gameDurationInSeconds % 60).toString().padLeft(2, '0')}s";
+  }
+
+  String getGameModeByQueueId(int queueId) {
+    final Map<int, String> gameModes = {
+      0: 'Custom',
+      400: 'Normal Draft Pick',
+      420: 'Ranked Solo/Duo',
+      430: 'Normal Blind Pick',
+      440: 'Ranked Flex',
+      450: 'ARAM',
+      700: 'Clash',
+      900: 'URF',
+      1300: 'Nexus Blitz',
+      1400: 'ARAM Snowdown',
+      2000: 'TFT',
+      2010: 'TFT Ranked',
+    };
+    return gameModes[queueId]!;
   }
 }

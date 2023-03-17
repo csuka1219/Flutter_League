@@ -26,10 +26,11 @@ class SummonerInfo extends StatelessWidget {
             const EdgeInsets.only(top: 20, bottom: 25, right: 20, left: 20),
         child: InkWell(
           onTap: () => {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => SummonerDetailsPage()),
-            ),
+            //TODO
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => SummonerDetailsPage()),
+            // ),
           },
           child: Column(
             children: [
