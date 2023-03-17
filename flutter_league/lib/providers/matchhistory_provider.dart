@@ -30,6 +30,19 @@ class MatchHistoryData with ChangeNotifier {
     notifyListeners();
   }
 
+  bool _isSoloQueue = false;
+
+  bool get isSoloQueue => _isSoloQueue;
+
+  set isSoloQueue(bool value) {
+    _isSoloQueue = value;
+    notifyListeners();
+  }
+  void deniesisSoloQueue() {
+    _isSoloQueue = !_isSoloQueue;
+    notifyListeners();
+  }
+
   List<String> matches = [];
 
   Future<void> fetchMatchIds(String puuid) async {
@@ -43,6 +56,7 @@ class MatchHistoryData with ChangeNotifier {
     }
     if (loadNew) {
       await fetchMatchIds(puuid);
+      _matchHistory=[];
     }
     final List<MatchPreview?> loadedData = [];
     if (matches.isEmpty) return;

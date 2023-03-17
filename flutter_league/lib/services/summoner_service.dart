@@ -12,7 +12,7 @@ Future<Summoner?> getSummonerByName(String summonerName) async {
   if (summonerResponse.statusCode == 200) {
     final summonerData = jsonDecode(summonerResponse.body);
     final rankedData = await getRankedData(summonerData['id']);
-    final jsonResult = (rankedData['result'] != 'Unranked')
+    final jsonResult = (rankedData[0]['result'] != 'Unranked')
         ? mergeJson(summonerData, rankedData)
         : summonerData;
     final summonerObjResponse = Summoner.fromJson(jsonResult);
@@ -23,7 +23,7 @@ Future<Summoner?> getSummonerByName(String summonerName) async {
   }
 }
 
-Future<Map<String, dynamic>> getRankedData(String accountId) async {
+Future<List<dynamic>> getRankedData(String accountId) async {
   final rankedResponse = await http.get(
     Uri.parse(
         '${apiUrl}league/v4/entries/by-summoner/$accountId?api_key=$apikey'),
@@ -32,17 +32,30 @@ Future<Map<String, dynamic>> getRankedData(String accountId) async {
   if (rankedResponse.statusCode == 200) {
     final rankedData = jsonDecode(rankedResponse.body);
     if (rankedData.isNotEmpty) {
-      return rankedData.last;
+      return rankedData;
     }
   }
 
-  return {'result': 'Unranked'};
+  return [
+    {'result': 'Unranked'}
+  ];
 }
 
 Map<String, dynamic> mergeJson(
-    Map<String, dynamic> summonerData, Map<String, dynamic> rankedData) {
-  return {
-    ...summonerData,
-    ...rankedData,
-  };
+    Map<String, dynamic> summonerData, List<dynamic> rankedData) {
+  Map<String, dynamic> rankedInfo = {};
+  if (rankedData.isNotEmpty) {
+    rankedData.forEach((data) {
+      rankedInfo[data['queueType']] = {
+        'tier': data['tier'],
+        'rank': data['rank'],
+        'leaguePoints': data['leaguePoints'],
+        'wins': data['wins'],
+        'losses': data['losses']
+      };
+    });
+  }
+
+  Map<String, dynamic> mergedData = {...summonerData, ...rankedInfo};
+  return mergedData;
 }

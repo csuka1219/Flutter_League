@@ -21,7 +21,7 @@ class SummonerDetailsPage extends StatelessWidget {
         child: Column(
           children: [
             // Header section
-            _buildSummonerHeader(),
+            _buildSummonerHeader(context),
             SizedBox(
               height: 10,
             ),
@@ -42,9 +42,13 @@ class SummonerDetailsPage extends StatelessWidget {
                   } else {
                     return RefreshIndicator(
                       onRefresh: () async {
-                        matchHistoryData.matchNumber = 0;
-                        matchHistoryData.fetchData(
-                            summonerInfo.puuid, summonerInfo.name, false, true);
+                        if (!context.read<MatchHistoryData>().isLoading) {
+                          matchHistoryData.isLoading = true;
+                          matchHistoryData.matchNumber = 0;
+                          matchHistoryData.fetchData(summonerInfo.puuid,
+                              summonerInfo.name, false, true);
+                          matchHistoryData.isLoading = false;
+                        }
                       },
                       child: ListView.builder(
                         itemCount: matchHistoryData.matchHistory.length + 1,
@@ -80,7 +84,8 @@ class SummonerDetailsPage extends StatelessWidget {
   }
 
   //TODO soloq után egy lenyíló hogy lehessen váltani flexre
-  Widget _buildSummonerHeader() {
+  Widget _buildSummonerHeader(BuildContext context) {
+    //context.read<MatchHistoryData>().isSoloQueue=summonerInfo.soloRank!=null;
     return Container(
       padding: EdgeInsets.all(16.0),
       color: Colors.white,
@@ -95,7 +100,8 @@ class SummonerDetailsPage extends StatelessWidget {
                 height: 32.0,
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage("assets/ranks/${summonerInfo.tier}.png"),
+                    image: AssetImage(
+                        "assets/ranks/${context.watch<MatchHistoryData>().isSoloQueue ? summonerInfo.soloRank?.tier : summonerInfo.flexRank?.tier}.png"),
                   ),
                 ),
               ),
@@ -105,7 +111,7 @@ class SummonerDetailsPage extends StatelessWidget {
                 children: [
                   // Rank name
                   Text(
-                    "${summonerInfo.tier} ${summonerInfo.rank}",
+                    context.watch<MatchHistoryData>().isSoloQueue?"${summonerInfo.soloRank?.tier} ${summonerInfo.soloRank?.rank}":"${summonerInfo.flexRank?.tier} ${summonerInfo.flexRank?.rank}",
                     style: TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
@@ -115,7 +121,7 @@ class SummonerDetailsPage extends StatelessWidget {
                   // LP and winrate
                   Text(
                     //todo különszedni winrate alapján más színű text
-                    "${summonerInfo.leaguePoints} LP,  ${getWinrate()}% WR",
+                    "${context.watch<MatchHistoryData>().isSoloQueue ? summonerInfo.soloRank?.leaguePoints : summonerInfo.flexRank?.leaguePoints} LP,  ${getWinrate(context.watch<MatchHistoryData>().isSoloQueue)}% WR",
                     style: TextStyle(
                       fontSize: 14.0,
                       color: Colors.grey[600],
@@ -126,21 +132,42 @@ class SummonerDetailsPage extends StatelessWidget {
             ],
           ),
           // Solo/Duo or Flex
-          Text(
-            'Solo/Duo',
-            style: TextStyle(
-              fontSize: 16.0,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
+          GestureDetector(
+            onTap: () {
+              context.read<MatchHistoryData>().deniesisSoloQueue();
+            },
+            child: Text(
+              context.watch<MatchHistoryData>().isSoloQueue?'Solo/Duo':'Flex',
+              style: TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
           ),
           // Refresh and graph buttons
           Row(
             children: [
-              IconButton(
-                icon: Icon(Icons.refresh),
+              ElevatedButton(
                 onPressed: () {},
-              ),
+                style: ElevatedButton.styleFrom(
+                  //TODO live game
+                  backgroundColor: !true ? Colors.grey[600] : Colors.green,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.0),
+                  ),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+                ),
+                child: Text(
+                  'LIVE',
+                  style: TextStyle(
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              )
             ],
           ),
         ],
@@ -426,8 +453,15 @@ class SummonerDetailsPage extends StatelessWidget {
     );
   }
 
-  String getWinrate() {
-    return ((summonerInfo.wins! / (summonerInfo.wins! + summonerInfo.losses!)) *
+  String getWinrate(bool isSoloQueue) {
+    return isSoloQueue? ((summonerInfo.soloRank!.wins! /
+                (summonerInfo.soloRank!.wins! +
+                    summonerInfo.soloRank!.losses!)) *
+            100)
+        .round()
+        .toString():((summonerInfo.flexRank!.wins! /
+                (summonerInfo.flexRank!.wins! +
+                    summonerInfo.flexRank!.losses!)) *
             100)
         .round()
         .toString();
