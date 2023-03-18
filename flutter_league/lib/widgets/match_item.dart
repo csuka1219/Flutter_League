@@ -1,20 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
+import 'package:flutter_riot_api/model/match.dart';
 import 'package:flutter_riot_api/model/match_preview.dart';
+import 'package:flutter_riot_api/model/summoner.dart';
 import 'package:flutter_riot_api/screens/match_info.dart';
+import 'package:flutter_riot_api/services/matchinfo_service.dart';
 
 class MatchItem extends StatelessWidget {
   final MatchPreview matchHistory;
+  final Summoner summonerInfo;
 
-  const MatchItem({Key? key, required this.matchHistory}) : super(key: key);
+  const MatchItem(
+      {Key? key, required this.matchHistory, required this.summonerInfo})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => MatchInfoPage()),
-      ),
+      onTap: () async {
+        Match? matchInfo = await getMatchInfo(matchHistory.matchId);
+
+        ///TODO null check
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => MatchInfoPage(
+                    matchInfo: matchInfo!,
+                    summonerName: summonerInfo.name,
+                    isWin: matchHistory.playerStats.win,
+                  )),
+        );
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Container(
@@ -54,7 +70,7 @@ class MatchItem extends StatelessWidget {
             color: ColorPalette().primary,
             image: DecorationImage(
               image: AssetImage(
-                "assets/runes/${matchHistory.perks.primaryStyle}.png",
+                "assets/runes/${matchHistory.playerStats.perks.primaryStyle}.png",
               ),
             ),
           ),
@@ -66,7 +82,7 @@ class MatchItem extends StatelessWidget {
           decoration: BoxDecoration(
             image: DecorationImage(
               image: AssetImage(
-                "assets/runes/${matchHistory.perks.secondaryStyle}.png",
+                "assets/runes/${matchHistory.playerStats.perks.secondaryStyle}.png",
               ),
             ),
           ),

@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/model/match_preview.dart';
-import 'package:flutter_riot_api/services/match_preview_service.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_riot_api/services/matchhistory_service.dart';
 
 class MatchHistoryData with ChangeNotifier {
   MatchHistoryData(bool isSoloQueue) {

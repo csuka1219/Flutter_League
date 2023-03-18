@@ -1,28 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
+import 'package:flutter_riot_api/model/match.dart';
+import 'package:flutter_riot_api/model/match_preview.dart';
+import 'package:flutter_riot_api/model/playerstats.dart';
+import 'package:flutter_riot_api/model/summoner.dart';
+import 'package:flutter_riot_api/model/team_header.dart';
 import 'package:flutter_riot_api/screens/match_details.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class MatchInfoPage extends StatelessWidget {
-  const MatchInfoPage({Key? key}) : super(key: key);
+  final Match matchInfo;
+  final String summonerName;
+  final bool isWin;
+  const MatchInfoPage(
+      {Key? key,
+      required this.matchInfo,
+      required this.summonerName,
+      required this.isWin})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.green[400]),
+        iconTheme:
+            IconThemeData(color: isWin ? Colors.green[400] : Colors.red[400]),
         //backgroundColor: Colors.green[400],
         backgroundColor: ColorPalette().primary,
         title: Text(
           "Match Info",
-          style: TextStyle(color: Colors.green[400]),
+          style: TextStyle(color: isWin ? Colors.green[400] : Colors.red[400]),
         ),
         actions: [
           IconButton(
             color: ColorPalette().secondary,
             icon: Icon(
               Icons.bar_chart,
-              color: Colors.green[400],
+              color: isWin ? Colors.green[400] : Colors.red[400],
             ),
             onPressed: () => {
               Navigator.push(
@@ -42,33 +56,35 @@ class MatchInfoPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: Container(
-              color: true ? ColorPalette().primary : Colors.red[400],
+              color: ColorPalette().primary,
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    true ? "Victory" : "Defeat",
+                    isWin ? "Victory" : "Defeat",
                     style: TextStyle(
-                      color: Colors.green[400],
+                      color: isWin ? Colors.green[400] : Colors.red[400],
                       fontSize: 24.0,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: 8.0),
+                  //TODO ezeket kiszervezni
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.schedule,
-                          color: Colors.green[400], size: 16.0),
-                      SizedBox(width: 4.0),
                       Text(
-                        "Normal - 15:27",
+                        "${getGameModeByQueueId(matchInfo.queueId)} - ${getFormattedDuration(matchInfo.gameDuration)}",
                         style: TextStyle(
-                          color: Colors.green[400],
+                          color: isWin ? Colors.green[400] : Colors.red[400],
                           fontSize: 16.0,
                         ),
                       ),
+                      SizedBox(width: 4.0),
+                      Icon(Icons.schedule,
+                          color: isWin ? Colors.green[400] : Colors.red[400],
+                          size: 16.0),
                     ],
                   ),
                 ],
@@ -87,18 +103,20 @@ class MatchInfoPage extends StatelessWidget {
                     thickness: 1.0,
                   ),
                   _buildTeamHeader(
-                      "WINNER (BLUE)", 32, 16, 44, 10, 3, 1, Colors.blue),
+                      "WINNER ${matchInfo.participants[0].win ? '(BLUE)' : '(RED)'}",
+                      true),
                   SizedBox(height: 10),
-                  _buildPlayerList(),
+                  _buildPlayerList(true),
                   SizedBox(height: 20),
                   Divider(
                     color: Colors.red,
                     thickness: 1,
                   ),
                   _buildTeamHeader(
-                      "LOSER (RED)", 16, 32, 22, 5, 2, 0, Colors.red),
+                      "LOSER ${matchInfo.participants[0].win ? '(RED)' : '(BLUE)'}",
+                      false),
                   SizedBox(height: 10),
-                  _buildPlayerList(),
+                  _buildPlayerList(false),
                   SizedBox(height: 32.0),
                 ],
               ),
@@ -109,7 +127,7 @@ class MatchInfoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPlayerList() {
+  Widget _buildPlayerList(bool isWinner) {
     double lineWidth = 0;
     return ListView.separated(
       separatorBuilder: (BuildContext context, int index) {
@@ -122,8 +140,13 @@ class MatchInfoPage extends StatelessWidget {
       physics: NeverScrollableScrollPhysics(),
       itemCount: 5,
       itemBuilder: (context, index) {
-        (index == 3) ? lineWidth = 2 : lineWidth = 0;
-        //Player player = players[index];
+        List<PlayerStats> tempList = isWinner
+            ? matchInfo.participants.sublist(0, 5)
+            : matchInfo.participants.sublist(5);
+        PlayerStats playerStat = tempList[index];
+        (playerStat.summonerName == summonerName)
+            ? lineWidth = 3
+            : lineWidth = 0;
         return Container(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
           margin: EdgeInsets.only(bottom: 2),
@@ -140,9 +163,8 @@ class MatchInfoPage extends StatelessWidget {
                     width: lineWidth,
                   ),
                   image: DecorationImage(
-                    image: NetworkImage(
-                      "https://opgg-static.akamaized.net/meta/images/lol/champion/Kaisa.png?image=c_crop,h_103,w_103,x_9,y_9/q_auto,f_webp,w_96&v=1678078753492",
-                    ),
+                    image: AssetImage(
+                        "assets/champions/${playerStat.championName}.png"),
                   ),
                 ),
               ),
@@ -153,9 +175,8 @@ class MatchInfoPage extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        //TODO max length
                         Text(
-                          "NusyBerry",
+                          "${playerStat.summonerName}",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -167,6 +188,7 @@ class MatchInfoPage extends StatelessWidget {
                             RankIcon(),
                             SizedBox(width: 4),
                             Text(
+                              //TODO
                               'Gold 2',
                               style: TextStyle(fontSize: 10),
                             ),
@@ -183,9 +205,8 @@ class MatchInfoPage extends StatelessWidget {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(6),
                             image: DecorationImage(
-                              image: NetworkImage(
-                                "https://opgg-static.akamaized.net/meta/images/lol/spell/SummonerFlash.png?image=q_auto,f_webp,w_44&v=1678078753492",
-                              ),
+                              image: AssetImage(
+                                  "assets/spells/${playerStat.summoner1Id}.png"),
                             ),
                           ),
                         ),
@@ -196,9 +217,8 @@ class MatchInfoPage extends StatelessWidget {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(6),
                             image: DecorationImage(
-                              image: NetworkImage(
-                                "https://opgg-static.akamaized.net/meta/images/lol/spell/SummonerExhaust.png?image=q_auto,f_webp,w_44&v=1678078753492",
-                              ),
+                              image: AssetImage(
+                                  "assets/spells/${playerStat.summoner2Id}.png"),
                             ),
                           ),
                         ),
@@ -210,9 +230,8 @@ class MatchInfoPage extends StatelessWidget {
                             shape: BoxShape.circle,
                             color: ColorPalette().primary,
                             image: DecorationImage(
-                              image: NetworkImage(
-                                "https://opgg-static.akamaized.net/meta/images/lol/perk/8008.png?image=q_auto,f_webp,w_44&v=1678078753492",
-                              ),
+                              image: AssetImage(
+                                  "assets/runes/${playerStat.perks.primaryStyle}.png"),
                             ),
                           ),
                         ),
@@ -223,9 +242,8 @@ class MatchInfoPage extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             image: DecorationImage(
-                              image: NetworkImage(
-                                "https://opgg-static.akamaized.net/meta/images/lol/perkStyle/8300.png?image=q_auto,f_webp,w_44&v=1678078753492",
-                              ),
+                              image: AssetImage(
+                                  "assets/runes/${playerStat.perks.secondaryStyle}.png"),
                             ),
                           ),
                         ),
@@ -241,12 +259,12 @@ class MatchInfoPage extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        "120 CS(6.1)",
+                        "${playerStat.totalCS} CS(${getCsPerMinute(playerStat)})",
                         style: TextStyle(fontSize: 9),
                       ),
                       SizedBox(width: 5),
                       Text(
-                        "4 / ",
+                        "${playerStat.kills} / ",
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 16.0,
@@ -254,7 +272,7 @@ class MatchInfoPage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        "2",
+                        "${playerStat.deaths}",
                         style: TextStyle(
                           color: Colors.red,
                           fontSize: 16.0,
@@ -262,7 +280,7 @@ class MatchInfoPage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        " / 4",
+                        " / ${playerStat.assists}",
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 16.0,
@@ -275,20 +293,16 @@ class MatchInfoPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildItemsRow(),
-                      _buildItemsRow(),
-                      _buildItemsRow(),
-                      _buildItemsRow(),
-                      _buildItemsRow(),
-                      _buildItemsRow(),
+                      for (int item in playerStat.items.sublist(0, 6))
+                        _buildItemsRow(item),
                       Container(
                         width: 18.0,
                         height: 18.0,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           image: DecorationImage(
-                            image: NetworkImage(
-                                "https://opgg-static.akamaized.net/meta/images/lol/item/3363.png?image=q_auto,f_webp,w_44&v=1678078753492"),
+                            image: AssetImage(
+                                "assets/items/${playerStat.item6}.png"),
                           ),
                         ),
                       )
@@ -303,81 +317,52 @@ class MatchInfoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTeamHeader(String teamName, int kills, int deaths, int assists,
-      int turrets, int dragons, int barons, Color color) {
+  Widget _buildTeamHeader(String teamName, bool isWinnerTeam) {
+    late TeamHeader teamHeader;
+    if (isWinnerTeam) {
+      teamHeader = TeamHeader(
+          matchInfo.participants.sublist(0, matchInfo.participants.length ~/ 2),
+          matchInfo.teams[0]);
+    } else {
+      teamHeader = TeamHeader(
+          matchInfo.participants.sublist(matchInfo.participants.length ~/ 2),
+          matchInfo.teams[1]);
+    }
+
     return Container(
       decoration: BoxDecoration(
-        // color: Colors.blue,
         borderRadius: BorderRadius.circular(8.0),
       ),
       child: Container(
-        //color: true ? Colors.green[400] : Colors.red[400],
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
             Text(
               teamName,
               style: TextStyle(
-                color: color,
+                color: isWinnerTeam ? Colors.blue : Colors.red,
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
               ),
             ),
             SizedBox(height: 8.0, width: 10),
-            SizedBox(width: 8.0),
-            Row(
-              children: [
-                SvgPicture.network(
-                  'https://s-lol-web.op.gg/images/icon/icon-tower.svg?v=1678413225229',
-                  height: 16,
-                  width: 16,
-                ),
-                Text(
-                  " $turrets",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 12.0,
-                  ),
-                ),
-              ],
+            _buildStatIconAndText(
+              'https://s-lol-web.op.gg/images/icon/icon-tower.svg?v=1678413225229',
+              '${teamHeader.turrets}',
             ),
             SizedBox(width: 8.0),
-            Row(
-              children: [
-                SvgPicture.network(
-                  'https://s-lol-web.op.gg/images/icon/icon-dragon.svg?v=1678413225229',
-                  height: 16,
-                  width: 16,
-                ),
-                Text(
-                  " $dragons",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 12.0,
-                  ),
-                ),
-              ],
+            _buildStatIconAndText(
+              'https://s-lol-web.op.gg/images/icon/icon-dragon.svg?v=1678413225229',
+              '${teamHeader.dragons}',
             ),
             SizedBox(width: 8.0),
-            Row(
-              children: [
-                SvgPicture.network(
-                  'https://s-lol-web.op.gg/images/icon/icon-dragon.svg?v=1678413225229',
-                  height: 16,
-                  width: 16,
-                ),
-                Text(
-                  " $barons",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 12.0,
-                  ),
-                ),
-              ],
+            _buildStatIconAndText(
+              'https://s-lol-web.op.gg/images/icon/icon-baron.svg?v=1678413225229',
+              '${teamHeader.barons}',
             ),
             Spacer(),
             Text(
-              "$kills / ",
+              '${teamHeader.kills} / ',
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 16.0,
@@ -385,7 +370,7 @@ class MatchInfoPage extends StatelessWidget {
               ),
             ),
             Text(
-              "$deaths",
+              '${teamHeader.deaths}',
               style: TextStyle(
                 color: Colors.red,
                 fontSize: 16.0,
@@ -393,7 +378,7 @@ class MatchInfoPage extends StatelessWidget {
               ),
             ),
             Text(
-              " / $assists",
+              ' / ${teamHeader.assists}',
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 16.0,
@@ -406,18 +391,44 @@ class MatchInfoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildItemsRow() {
-    return Container(
-      width: 20.0,
-      height: 20.0,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        image: DecorationImage(
-          image: NetworkImage(
-              "https://opgg-static.akamaized.net/meta/images/lol/item/6671.png?image=q_auto,f_webp,w_44&v=1678078753492"),
+  Widget _buildStatIconAndText(String iconUrl, String text) {
+    return Row(
+      children: [
+        SvgPicture.network(
+          iconUrl,
+          height: 16,
+          width: 16,
         ),
-      ),
+        Text(
+          ' $text',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 12.0,
+          ),
+        ),
+      ],
     );
+  }
+
+  Widget _buildItemsRow(int item) {
+    return item != 0
+        ? Container(
+            width: 20.0,
+            height: 20.0,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              image: DecorationImage(
+                image: AssetImage("assets/items/${item}.png"),
+              ),
+            ),
+          )
+        : Container(
+            width: 20.0,
+            height: 20.0,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: ColorPalette().primary),
+          );
   }
 
   Widget _buildDamageDealtBar(int damageDealt, int maxDamageDealt) {
@@ -472,6 +483,34 @@ class MatchInfoPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String getFormattedDuration(int gameDurationInSeconds) {
+    return "${(gameDurationInSeconds / 60).floor()}m ${(gameDurationInSeconds % 60).toString().padLeft(2, '0')}s";
+  }
+
+  String getGameModeByQueueId(int queueId) {
+    final Map<int, String> gameModes = {
+      0: 'Custom',
+      400: 'Normal Draft Pick',
+      420: 'Ranked Solo/Duo',
+      430: 'Normal Blind Pick',
+      440: 'Ranked Flex',
+      450: 'ARAM',
+      700: 'Clash',
+      900: 'URF',
+      1300: 'Nexus Blitz',
+      1400: 'ARAM Snowdown',
+      2000: 'TFT',
+      2010: 'TFT Ranked',
+    };
+    return gameModes[queueId]!;
+  }
+
+  String getCsPerMinute(PlayerStats playerStat) {
+    double gameDurationInMinutes = matchInfo.gameDuration / 60;
+    double csPerMinute = playerStat.totalCS / gameDurationInMinutes;
+    return csPerMinute.toStringAsFixed(1);
   }
 }
 

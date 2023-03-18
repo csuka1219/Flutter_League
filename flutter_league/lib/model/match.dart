@@ -1,116 +1,32 @@
+import 'package:flutter_riot_api/model/match_preview.dart';
+import 'package:flutter_riot_api/model/playerstats.dart';
+
 class Match {
-  final String tier;
-  final String rank;
   final int gameDuration;
-  final String gameMode;
-  final List<dynamic> teams;
-  final List<dynamic> participants;
+  final int queueId;
+  final List<Team> teams;
+  final List<PlayerStats> participants;
 
   Match({
-    required this.tier,
-    required this.rank,
     required this.gameDuration,
-    required this.gameMode,
+    required this.queueId,
     required this.teams,
     required this.participants,
   });
 
   factory Match.fromJson(Map<String, dynamic> json) {
+    List<PlayerStats> participants = [];
+    for (var participantJson in json['participants']) {
+      final perksJson = participantJson['perks'] as Map<String, dynamic>;
+      PlayerStats participant =
+          PlayerStats.fromJson(participantJson, perksJson);
+      participants.add(participant);
+    }
     return Match(
-      tier: json['tier'],
-      rank: json['rank'],
       gameDuration: json['gameDuration'],
-      gameMode: json['gameMode'],
-      teams: json['teams'],
-      participants: json['participants'],
-    );
-  }
-}
-
-class Participants {
-  final int champLevel;
-  final int championId;
-  final int championTransform;
-  final int deaths;
-  final int goldEarned;
-  final int item0;
-  final int item1;
-  final int item2;
-  final int item3;
-  final int item4;
-  final int item5;
-  final int item6;
-  final int kills;
-  final String lane;
-  final int pentaKills;
-  final String role;
-  final int summoner1Id;
-  final int summoner2Id;
-  final int summonerLevel;
-  final String summonerName;
-  final int totalDamageDealtToChampions;
-  final int totalDamageTaken;
-  final int totalHeal;
-  final int totalMinionsKilled;
-  final int wardsPlaced;
-  final bool win;
-
-  Participants({
-    required this.champLevel,
-    required this.championId,
-    required this.championTransform,
-    required this.deaths,
-    required this.goldEarned,
-    required this.item0,
-    required this.item1,
-    required this.item2,
-    required this.item3,
-    required this.item4,
-    required this.item5,
-    required this.item6,
-    required this.kills,
-    required this.lane,
-    required this.pentaKills,
-    required this.role,
-    required this.summoner1Id,
-    required this.summoner2Id,
-    required this.summonerLevel,
-    required this.summonerName,
-    required this.totalDamageDealtToChampions,
-    required this.totalDamageTaken,
-    required this.totalHeal,
-    required this.totalMinionsKilled,
-    required this.wardsPlaced,
-    required this.win,
-  });
-  factory Participants.fromJson(Map<String, dynamic> json) {
-    return Participants(
-      champLevel: json['champLevel'],
-      championId: json['championId'],
-      championTransform: json['championTransform'],
-      deaths: json['deaths'],
-      goldEarned: json['goldEarned'],
-      item0: json['item0'],
-      item1: json['item1'],
-      item2: json['item2'],
-      item3: json['item3'],
-      item4: json['item4'],
-      item5: json['item5'],
-      item6: json['item6'],
-      kills: json['kills'],
-      lane: json['lane'],
-      pentaKills: json['pentaKills'],
-      role: json['role'],
-      summoner1Id: json['summoner1Id'],
-      summoner2Id: json['summoner2Id'],
-      summonerLevel: json['summonerLevel'],
-      summonerName: json['summonerName'],
-      totalDamageDealtToChampions: json['totalDamageDealtToChampions'],
-      totalDamageTaken: json['totalDamageTaken'],
-      totalHeal: json['totalHeal'],
-      totalMinionsKilled: json['totalMinionsKilled'],
-      wardsPlaced: json['wardsPlaced'],
-      win: json['win'],
+      queueId: json['queueId'],
+      teams: [Team.fromJson(json['teams'][0]), Team.fromJson(json['teams'][1])],
+      participants: participants,
     );
   }
 }
