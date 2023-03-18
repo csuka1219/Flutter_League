@@ -5,6 +5,7 @@ import 'package:flutter_riot_api/model/match_preview.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
 import 'package:flutter_riot_api/screens/match_info.dart';
 import 'package:flutter_riot_api/services/matchinfo_service.dart';
+import 'package:flutter_riot_api/services/summoner_service.dart';
 
 class MatchItem extends StatelessWidget {
   final MatchPreview matchHistory;
@@ -19,6 +20,10 @@ class MatchItem extends StatelessWidget {
     return InkWell(
       onTap: () async {
         Match? matchInfo = await getMatchInfo(matchHistory.matchId);
+        List<Summoner?> summonerInfos = [];
+        for (var item in matchInfo!.participants) {
+          summonerInfos.add(await getSummonerByName(item.summonerName));
+        }
 
         ///TODO null check
         Navigator.push(
@@ -28,6 +33,7 @@ class MatchItem extends StatelessWidget {
                     matchInfo: matchInfo!,
                     summonerName: summonerInfo.name,
                     isWin: matchHistory.playerStats.win,
+                    summonerInfos: summonerInfos,
                   )),
         );
       },

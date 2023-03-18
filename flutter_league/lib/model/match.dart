@@ -1,4 +1,3 @@
-import 'package:flutter_riot_api/model/match_preview.dart';
 import 'package:flutter_riot_api/model/playerstats.dart';
 
 class Match {

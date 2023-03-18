@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
 import 'package:flutter_riot_api/model/match.dart';
-import 'package:flutter_riot_api/model/match_preview.dart';
 import 'package:flutter_riot_api/model/playerstats.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
 import 'package:flutter_riot_api/model/team_header.dart';
@@ -12,11 +11,13 @@ class MatchInfoPage extends StatelessWidget {
   final Match matchInfo;
   final String summonerName;
   final bool isWin;
+  final List<Summoner?> summonerInfos;
   const MatchInfoPage(
       {Key? key,
       required this.matchInfo,
       required this.summonerName,
-      required this.isWin})
+      required this.isWin,
+      required this.summonerInfos})
       : super(key: key);
 
   @override
@@ -147,6 +148,10 @@ class MatchInfoPage extends StatelessWidget {
         (playerStat.summonerName == summonerName)
             ? lineWidth = 3
             : lineWidth = 0;
+
+        List<Summoner?> tempSummonerList =
+            isWinner ? summonerInfos.sublist(0, 5) : summonerInfos.sublist(5);
+
         return Container(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
           margin: EdgeInsets.only(bottom: 2),
@@ -182,15 +187,18 @@ class MatchInfoPage extends StatelessWidget {
                             fontSize: 12,
                           ),
                         ),
-                        SizedBox(width: 8),
+                        SizedBox(width: 4),
                         Row(
                           children: [
-                            RankIcon(),
-                            SizedBox(width: 4),
+                            RankIcon(
+                              summonerInfo: tempSummonerList[index]!,
+                              queueId: matchInfo.queueId,
+                            ),
+                            SizedBox(width: 2),
                             Text(
                               //TODO
-                              'Gold 2',
-                              style: TextStyle(fontSize: 10),
+                              getRank(tempSummonerList[index]!),
+                              style: TextStyle(fontSize: 8),
                             ),
                           ],
                         ),
@@ -328,7 +336,7 @@ class MatchInfoPage extends StatelessWidget {
           matchInfo.participants.sublist(matchInfo.participants.length ~/ 2),
           matchInfo.teams[1]);
     }
-
+    Color teamColor = isWinnerTeam ? Colors.blue : Colors.red;
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8.0),
@@ -340,12 +348,13 @@ class MatchInfoPage extends StatelessWidget {
             Text(
               teamName,
               style: TextStyle(
-                color: isWinnerTeam ? Colors.blue : Colors.red,
+                color: teamColor,
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
               ),
             ),
             SizedBox(height: 8.0, width: 10),
+            //TODO icon kék
             _buildStatIconAndText(
               'https://s-lol-web.op.gg/images/icon/icon-tower.svg?v=1678413225229',
               '${teamHeader.turrets}',
@@ -512,20 +521,83 @@ class MatchInfoPage extends StatelessWidget {
     double csPerMinute = playerStat.totalCS / gameDurationInMinutes;
     return csPerMinute.toStringAsFixed(1);
   }
+
+  String getRank(Summoner summonerInfo) {
+    if (matchInfo.queueId == 420) {
+      return summonerInfo.soloRank != null
+          ? "${summonerInfo.soloRank!.tier!} ${summonerInfo.soloRank!.rank!}"
+          : "Level ${summonerInfo.summonerLevel}";
+    } else if (matchInfo.queueId == 440) {
+      return summonerInfo.flexRank != null
+          ? "${summonerInfo.flexRank!.tier!} ${summonerInfo.flexRank!.rank!}"
+          : "Level ${summonerInfo.summonerLevel}";
+    }
+    if (summonerInfo.soloRank != null) {
+      return "${summonerInfo.soloRank!.tier!} ${summonerInfo.soloRank!.rank!}";
+    } else if (summonerInfo.flexRank != null) {
+      return "${summonerInfo.flexRank!.tier!} ${summonerInfo.flexRank!.rank!}";
+    }
+    return "Level ${summonerInfo.summonerLevel}";
+  }
 }
 
 class RankIcon extends StatelessWidget {
-  const RankIcon({Key? key}) : super(key: key);
+  final Summoner summonerInfo;
+  final int queueId;
+  const RankIcon({Key? key, required this.summonerInfo, required this.queueId})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 20.0,
-      height: 20.0,
-      decoration: BoxDecoration(
+    if (queueId == 420 && summonerInfo.soloRank != null) {
+      return Container(
+        width: 20.0,
+        height: 20.0,
+        decoration: BoxDecoration(
           image: DecorationImage(
-              image: NetworkImage(
-                  "https://opgg-static.akamaized.net/images/medals_new/gold.png?image=q_auto,f_webp,w_144&v=1678078753677"))),
+            image:
+                AssetImage("assets/ranks/${summonerInfo.soloRank!.tier!}.png"),
+          ),
+        ),
+      );
+    } else if (queueId == 440 && summonerInfo.flexRank != null) {
+      return Container(
+        width: 20.0,
+        height: 20.0,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image:
+                AssetImage("assets/ranks/${summonerInfo.flexRank!.tier!}.png"),
+          ),
+        ),
+      );
+    }
+    if (summonerInfo.soloRank != null) {
+      return Container(
+        width: 20.0,
+        height: 20.0,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image:
+                AssetImage("assets/ranks/${summonerInfo.soloRank!.tier!}.png"),
+          ),
+        ),
+      );
+    } else if (summonerInfo.flexRank != null) {
+      return Container(
+        width: 20.0,
+        height: 20.0,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image:
+                AssetImage("assets/ranks/${summonerInfo.flexRank!.tier!}.png"),
+          ),
+        ),
+      );
+    }
+    return Container(
+      width: 0.0,
+      height: 0.0,
     );
   }
 }
