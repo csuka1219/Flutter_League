@@ -6,6 +6,7 @@ import 'package:flutter_riot_api/model/summoner.dart';
 import 'package:flutter_riot_api/model/team_header.dart';
 import 'package:flutter_riot_api/providers/matchinfo_provider.dart';
 import 'package:flutter_riot_api/screens/match_details.dart';
+import 'package:flutter_riot_api/screens/match_history.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
@@ -175,173 +176,183 @@ class MatchInfoPage extends StatelessWidget {
         List<Summoner?> tempSummonerList =
             isWinner ? summonerInfos.sublist(0, 5) : summonerInfos.sublist(5);
 
-        return Container(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-          margin: EdgeInsets.only(bottom: 2),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.blue,
-                    width: lineWidth,
-                  ),
-                  image: DecorationImage(
-                    image: AssetImage(
-                        "assets/champions/${playerStat.championName}.png"),
+        return GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MatchHistoryPage(
+                summonerInfo: tempSummonerList[index]!,
+              ),
+            ),
+          ),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+            margin: EdgeInsets.only(bottom: 2),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.blue,
+                      width: lineWidth,
+                    ),
+                    image: DecorationImage(
+                      image: AssetImage(
+                          "assets/champions/${playerStat.championName}.png"),
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            "${playerStat.summonerName.length < 15 ? playerStat.summonerName : playerStat.summonerName.substring(0, 10) + '...'}",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                          SizedBox(width: 4),
+                          Row(
+                            children: [
+                              RankIcon(
+                                summonerInfo: tempSummonerList[index]!,
+                                queueId: matchInfo.queueId,
+                              ),
+                              SizedBox(width: 2),
+                              Text(
+                                //TODO
+                                getRank(matchInfo, tempSummonerList[index]!),
+                                style: TextStyle(fontSize: 8),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 5),
+                      Row(
+                        children: [
+                          Container(
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              image: DecorationImage(
+                                image: AssetImage(
+                                    "assets/spells/${playerStat.summoner1Id}.png"),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 2.5),
+                          Container(
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              image: DecorationImage(
+                                image: AssetImage(
+                                    "assets/spells/${playerStat.summoner2Id}.png"),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 2.5),
+                          Container(
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: ColorPalette().primary,
+                              image: DecorationImage(
+                                image: AssetImage(
+                                    "assets/runes/${playerStat.perks.primaryStyle}.png"),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 2.5),
+                          Container(
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                image: AssetImage(
+                                    "assets/runes/${playerStat.perks.secondaryStyle}.png"),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Row(
                       children: [
                         Text(
-                          "${playerStat.summonerName}",
+                          "${playerStat.totalCS} CS(${getCsPerMinute(matchInfo, playerStat)})",
+                          style: TextStyle(fontSize: 9),
+                        ),
+                        SizedBox(width: 5),
+                        Text(
+                          "${playerStat.kills} / ",
                           style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16.0,
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
                           ),
                         ),
-                        SizedBox(width: 4),
-                        Row(
-                          children: [
-                            RankIcon(
-                              summonerInfo: tempSummonerList[index]!,
-                              queueId: matchInfo.queueId,
-                            ),
-                            SizedBox(width: 2),
-                            Text(
-                              //TODO
-                              getRank(matchInfo, tempSummonerList[index]!),
-                              style: TextStyle(fontSize: 8),
-                            ),
-                          ],
+                        Text(
+                          "${playerStat.deaths}",
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          " / ${playerStat.assists}",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
                     SizedBox(height: 5),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
+                        for (int item in playerStat.items.sublist(0, 6))
+                          _buildItemsRow(item),
                         Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6),
-                            image: DecorationImage(
-                              image: AssetImage(
-                                  "assets/spells/${playerStat.summoner1Id}.png"),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 2.5),
-                        Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6),
-                            image: DecorationImage(
-                              image: AssetImage(
-                                  "assets/spells/${playerStat.summoner2Id}.png"),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 2.5),
-                        Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: ColorPalette().primary,
-                            image: DecorationImage(
-                              image: AssetImage(
-                                  "assets/runes/${playerStat.perks.primaryStyle}.png"),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 2.5),
-                        Container(
-                          width: 16,
-                          height: 16,
+                          width: 18.0,
+                          height: 18.0,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             image: DecorationImage(
                               image: AssetImage(
-                                  "assets/runes/${playerStat.perks.secondaryStyle}.png"),
+                                  "assets/items/${playerStat.item6}.png"),
                             ),
                           ),
-                        ),
+                        )
                       ],
                     ),
                   ],
                 ),
-              ),
-              SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        "${playerStat.totalCS} CS(${getCsPerMinute(matchInfo, playerStat)})",
-                        style: TextStyle(fontSize: 9),
-                      ),
-                      SizedBox(width: 5),
-                      Text(
-                        "${playerStat.kills} / ",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        "${playerStat.deaths}",
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        " / ${playerStat.assists}",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 5),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      for (int item in playerStat.items.sublist(0, 6))
-                        _buildItemsRow(item),
-                      Container(
-                        width: 18.0,
-                        height: 18.0,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                            image: AssetImage(
-                                "assets/items/${playerStat.item6}.png"),
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

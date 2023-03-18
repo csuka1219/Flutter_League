@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
-import 'package:flutter_riot_api/screens/summoner_details.dart';
+import 'package:flutter_riot_api/screens/match_history.dart';
 import 'package:flutter_riot_api/services/matchinfo_service.dart';
 
 class SummonerInfo extends StatelessWidget {

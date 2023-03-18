@@ -8,10 +8,10 @@ import '../providers/matchhistory_provider.dart';
 //TODO appbar jobb felső sarok kedvencemnek választás
 //TODO live game betöltés
 
-class SummonerDetailsPage extends StatelessWidget {
+class MatchHistoryPage extends StatelessWidget {
   final Summoner summonerInfo;
 
-  const SummonerDetailsPage({super.key, required this.summonerInfo});
+  const MatchHistoryPage({super.key, required this.summonerInfo});
 
   @override
   Widget build(BuildContext context) {

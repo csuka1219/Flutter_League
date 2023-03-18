@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
-import 'package:flutter_riot_api/screens/summoner_details.dart';
+import 'package:flutter_riot_api/screens/match_history.dart';
 import 'package:flutter_riot_api/services/summoner_service.dart';
 import 'package:flutter_riot_api/widgets/summoner_info.dart';
 import 'package:provider/provider.dart';
@@ -94,7 +94,7 @@ class HomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => SummonerDetailsPage(
+                        builder: (context) => MatchHistoryPage(
                               summonerInfo: summonerInfo!,
                             )),
                   );
@@ -108,7 +108,7 @@ class HomeScreen extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                           //TODO nem létező summoner
-                          builder: (context) => SummonerDetailsPage(
+                          builder: (context) => MatchHistoryPage(
                                 summonerInfo: summonerInfo!,
                               )),
                     );
