@@ -75,6 +75,7 @@ class SummonerDetailsPage extends StatelessWidget {
                         return MatchItem(
                           matchHistory: matchHistoryData.matchHistory[index]!,
                           summonerInfo: summonerInfo,
+                          matchHistoryData: matchHistoryData,
                         );
                       } else {
                         return _buildLoadMoreButton(context, matchHistoryData);

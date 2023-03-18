@@ -4,131 +4,154 @@ import 'package:flutter_riot_api/model/match.dart';
 import 'package:flutter_riot_api/model/playerstats.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
 import 'package:flutter_riot_api/model/team_header.dart';
+import 'package:flutter_riot_api/providers/matchinfo_provider.dart';
 import 'package:flutter_riot_api/screens/match_details.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
 class MatchInfoPage extends StatelessWidget {
-  final Match matchInfo;
   final String summonerName;
   final bool isWin;
-  final List<Summoner?> summonerInfos;
-  const MatchInfoPage(
-      {Key? key,
-      required this.matchInfo,
-      required this.summonerName,
-      required this.isWin,
-      required this.summonerInfos})
-      : super(key: key);
+  final String matchId;
+  const MatchInfoPage({
+    Key? key,
+    required this.summonerName,
+    required this.isWin,
+    required this.matchId,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        iconTheme:
-            IconThemeData(color: isWin ? Colors.green[400] : Colors.red[400]),
-        //backgroundColor: Colors.green[400],
-        backgroundColor: ColorPalette().primary,
-        title: Text(
-          "Match Info",
-          style: TextStyle(color: isWin ? Colors.green[400] : Colors.red[400]),
-        ),
-        actions: [
-          IconButton(
-            color: ColorPalette().secondary,
-            icon: Icon(
-              Icons.bar_chart,
-              color: isWin ? Colors.green[400] : Colors.red[400],
-            ),
-            onPressed: () => {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => MatchDetailsPage()),
-              ),
-            },
+        appBar: AppBar(
+          iconTheme:
+              IconThemeData(color: isWin ? Colors.green[400] : Colors.red[400]),
+          //backgroundColor: Colors.green[400],
+          backgroundColor: ColorPalette().primary,
+          title: Text(
+            "Match Info",
+            style:
+                TextStyle(color: isWin ? Colors.green[400] : Colors.red[400]),
           ),
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.blue,
-              borderRadius: BorderRadius.circular(8.0),
+          actions: [
+            IconButton(
+              color: ColorPalette().secondary,
+              icon: Icon(
+                Icons.bar_chart,
+                color: isWin ? Colors.green[400] : Colors.red[400],
+              ),
+              onPressed: () => {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MatchDetailsPage()),
+                ),
+              },
             ),
-            child: Container(
-              color: ColorPalette().primary,
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+          ],
+        ),
+        body: ChangeNotifierProvider(
+          create: (_) => MatchInfoData(),
+          child: Consumer<MatchInfoData>(
+            builder: (context, matchInfoData, child) {
+              if (matchInfoData.isLoading) {
+                matchInfoData.initDatas(matchId);
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    isWin ? "Victory" : "Defeat",
-                    style: TextStyle(
-                      color: isWin ? Colors.green[400] : Colors.red[400],
-                      fontSize: 24.0,
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Container(
+                      color: ColorPalette().primary,
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            isWin ? "Victory" : "Defeat",
+                            style: TextStyle(
+                              color:
+                                  isWin ? Colors.green[400] : Colors.red[400],
+                              fontSize: 24.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 8.0),
+                          //TODO ezeket kiszervezni
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "${getGameModeByQueueId(matchInfoData.matchInfo!.queueId)} - ${getFormattedDuration(matchInfoData.matchInfo!.gameDuration)}",
+                                style: TextStyle(
+                                  color: isWin
+                                      ? Colors.green[400]
+                                      : Colors.red[400],
+                                  fontSize: 16.0,
+                                ),
+                              ),
+                              SizedBox(width: 4.0),
+                              Icon(Icons.schedule,
+                                  color: isWin
+                                      ? Colors.green[400]
+                                      : Colors.red[400],
+                                  size: 16.0),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
+                  //SizedBox(height: 16.0),
                   SizedBox(height: 8.0),
-                  //TODO ezeket kiszervezni
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "${getGameModeByQueueId(matchInfo.queueId)} - ${getFormattedDuration(matchInfo.gameDuration)}",
-                        style: TextStyle(
-                          color: isWin ? Colors.green[400] : Colors.red[400],
-                          fontSize: 16.0,
-                        ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Divider(
+                            color: Colors.blue,
+                            thickness: 1.0,
+                          ),
+                          _buildTeamHeader(
+                              matchInfoData.matchInfo!,
+                              "WINNER ${matchInfoData.matchInfo!.participants[0].win ? '(BLUE)' : '(RED)'}",
+                              true),
+                          SizedBox(height: 10),
+                          _buildPlayerList(matchInfoData.matchInfo!,
+                              matchInfoData.summonerInfos, true),
+                          SizedBox(height: 20),
+                          Divider(
+                            color: Colors.red,
+                            thickness: 1,
+                          ),
+                          _buildTeamHeader(
+                              matchInfoData.matchInfo!,
+                              "LOSER ${matchInfoData.matchInfo!.participants[0].win ? '(RED)' : '(BLUE)'}",
+                              false),
+                          SizedBox(height: 10),
+                          _buildPlayerList(matchInfoData.matchInfo!,
+                              matchInfoData.summonerInfos, false),
+                          SizedBox(height: 32.0),
+                        ],
                       ),
-                      SizedBox(width: 4.0),
-                      Icon(Icons.schedule,
-                          color: isWin ? Colors.green[400] : Colors.red[400],
-                          size: 16.0),
-                    ],
+                    ),
                   ),
                 ],
-              ),
-            ),
+              );
+            },
           ),
-          //SizedBox(height: 16.0),
-          SizedBox(height: 8.0),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Divider(
-                    color: Colors.blue,
-                    thickness: 1.0,
-                  ),
-                  _buildTeamHeader(
-                      "WINNER ${matchInfo.participants[0].win ? '(BLUE)' : '(RED)'}",
-                      true),
-                  SizedBox(height: 10),
-                  _buildPlayerList(true),
-                  SizedBox(height: 20),
-                  Divider(
-                    color: Colors.red,
-                    thickness: 1,
-                  ),
-                  _buildTeamHeader(
-                      "LOSER ${matchInfo.participants[0].win ? '(RED)' : '(BLUE)'}",
-                      false),
-                  SizedBox(height: 10),
-                  _buildPlayerList(false),
-                  SizedBox(height: 32.0),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+        ));
   }
 
-  Widget _buildPlayerList(bool isWinner) {
+  Widget _buildPlayerList(
+      Match matchInfo, List<Summoner?> summonerInfos, bool isWinner) {
     double lineWidth = 0;
     return ListView.separated(
       separatorBuilder: (BuildContext context, int index) {
@@ -197,7 +220,7 @@ class MatchInfoPage extends StatelessWidget {
                             SizedBox(width: 2),
                             Text(
                               //TODO
-                              getRank(tempSummonerList[index]!),
+                              getRank(matchInfo, tempSummonerList[index]!),
                               style: TextStyle(fontSize: 8),
                             ),
                           ],
@@ -267,7 +290,7 @@ class MatchInfoPage extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        "${playerStat.totalCS} CS(${getCsPerMinute(playerStat)})",
+                        "${playerStat.totalCS} CS(${getCsPerMinute(matchInfo, playerStat)})",
                         style: TextStyle(fontSize: 9),
                       ),
                       SizedBox(width: 5),
@@ -325,7 +348,7 @@ class MatchInfoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTeamHeader(String teamName, bool isWinnerTeam) {
+  Widget _buildTeamHeader(Match matchInfo, String teamName, bool isWinnerTeam) {
     late TeamHeader teamHeader;
     if (isWinnerTeam) {
       teamHeader = TeamHeader(
@@ -516,13 +539,13 @@ class MatchInfoPage extends StatelessWidget {
     return gameModes[queueId]!;
   }
 
-  String getCsPerMinute(PlayerStats playerStat) {
+  String getCsPerMinute(Match matchInfo, PlayerStats playerStat) {
     double gameDurationInMinutes = matchInfo.gameDuration / 60;
     double csPerMinute = playerStat.totalCS / gameDurationInMinutes;
     return csPerMinute.toStringAsFixed(1);
   }
 
-  String getRank(Summoner summonerInfo) {
+  String getRank(Match matchInfo, Summoner summonerInfo) {
     if (matchInfo.queueId == 420) {
       return summonerInfo.soloRank != null
           ? "${summonerInfo.soloRank!.tier!} ${summonerInfo.soloRank!.rank!}"
