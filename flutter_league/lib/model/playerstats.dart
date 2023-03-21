@@ -19,8 +19,16 @@ class PlayerStats {
   final int summoner1Id;
   final int summoner2Id;
   final int totalCS;
+  final int goldEarned;
+  final int totalDamageDealtToChampions;
+  final int totalDamageTaken;
+  final int wardsPlaced;
   final bool win;
   final Perks perks;
+//   goldEarned
+// totalDamageDealt
+// totalDamageTaken
+// wardsPlaced
 
   PlayerStats(
       {required this.summonerName,
@@ -43,6 +51,10 @@ class PlayerStats {
       required this.summoner1Id,
       required this.summoner2Id,
       required this.totalCS,
+      required this.goldEarned,
+      required this.totalDamageDealtToChampions,
+      required this.totalDamageTaken,
+      required this.wardsPlaced,
       required this.win,
       required this.perks});
   factory PlayerStats.fromJson(
@@ -76,9 +88,17 @@ class PlayerStats {
       summoner1Id: json['summoner1Id'],
       summoner2Id: json['summoner2Id'],
       totalCS: json['totalMinionsKilled'] + json['neutralMinionsKilled'],
+      goldEarned: json['goldEarned'],
+      totalDamageDealtToChampions: json['totalDamageDealtToChampions'],
+      totalDamageTaken: json['totalDamageTaken'],
+      wardsPlaced: json['wardsPlaced'],
       win: json['win'],
       perks: Perks.fromJson(perksJson),
     );
+  }
+  static int sumByProperty(
+      List<PlayerStats> list, int Function(PlayerStats) selector) {
+    return list.fold(0, (sum, stats) => sum + selector(stats));
   }
 }
 

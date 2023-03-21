@@ -23,132 +23,138 @@ class MatchInfoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<PlayerStats> playerStats = [];
     return Scaffold(
-        appBar: AppBar(
-          iconTheme:
-              IconThemeData(color: isWin ? Colors.green[400] : Colors.red[400]),
-          //backgroundColor: Colors.green[400],
-          backgroundColor: ColorPalette().primary,
-          title: Text(
-            "Match Info",
-            style:
-                TextStyle(color: isWin ? Colors.green[400] : Colors.red[400]),
-          ),
-          actions: [
-            IconButton(
-              color: ColorPalette().secondary,
-              icon: Icon(
-                Icons.bar_chart,
-                color: isWin ? Colors.green[400] : Colors.red[400],
-              ),
-              onPressed: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MatchDetailsPage()),
-                ),
-              },
-            ),
-          ],
+      appBar: AppBar(
+        iconTheme:
+            IconThemeData(color: isWin ? Colors.green[400] : Colors.red[400]),
+        backgroundColor: ColorPalette().primary,
+        title: Text(
+          "Match Info",
+          style: TextStyle(color: isWin ? Colors.green[400] : Colors.red[400]),
         ),
-        body: ChangeNotifierProvider(
-          create: (_) => MatchInfoData(),
-          child: Consumer<MatchInfoData>(
-            builder: (context, matchInfoData, child) {
-              if (matchInfoData.isLoading) {
-                matchInfoData.initDatas(matchId);
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Container(
-                      color: ColorPalette().primary,
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            isWin ? "Victory" : "Defeat",
-                            style: TextStyle(
-                              color:
-                                  isWin ? Colors.green[400] : Colors.red[400],
-                              fontSize: 24.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 8.0),
-                          //TODO ezeket kiszervezni
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "${getGameModeByQueueId(matchInfoData.matchInfo!.queueId)} - ${getFormattedDuration(matchInfoData.matchInfo!.gameDuration)}",
-                                style: TextStyle(
-                                  color: isWin
-                                      ? Colors.green[400]
-                                      : Colors.red[400],
-                                  fontSize: 16.0,
-                                ),
-                              ),
-                              SizedBox(width: 4.0),
-                              Icon(Icons.schedule,
-                                  color: isWin
-                                      ? Colors.green[400]
-                                      : Colors.red[400],
-                                  size: 16.0),
-                            ],
-                          ),
-                        ],
+        actions: [
+          IconButton(
+            color: ColorPalette().secondary,
+            icon: Icon(
+              Icons.bar_chart,
+              color: isWin ? Colors.green[400] : Colors.red[400],
+            ),
+            onPressed: () => {
+              if (playerStats.isNotEmpty)
+                {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MatchDetailsPage(
+                        playerStats: playerStats,
+                        summonerName: summonerName,
                       ),
                     ),
                   ),
-                  //SizedBox(height: 16.0),
-                  SizedBox(height: 8.0),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Divider(
-                            color: Colors.blue,
-                            thickness: 1.0,
-                          ),
-                          _buildTeamHeader(
-                              matchInfoData.matchInfo!,
-                              "WINNER ${matchInfoData.matchInfo!.participants[0].win ? '(BLUE)' : '(RED)'}",
-                              true),
-                          SizedBox(height: 10),
-                          _buildPlayerList(matchInfoData.matchInfo!,
-                              matchInfoData.summonerInfos, true),
-                          SizedBox(height: 20),
-                          Divider(
-                            color: Colors.red,
-                            thickness: 1,
-                          ),
-                          _buildTeamHeader(
-                              matchInfoData.matchInfo!,
-                              "LOSER ${matchInfoData.matchInfo!.participants[0].win ? '(RED)' : '(BLUE)'}",
-                              false),
-                          SizedBox(height: 10),
-                          _buildPlayerList(matchInfoData.matchInfo!,
-                              matchInfoData.summonerInfos, false),
-                          SizedBox(height: 32.0),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              );
+                },
             },
           ),
-        ));
+        ],
+      ),
+      body: ChangeNotifierProvider(
+        create: (_) => MatchInfoData(),
+        child: Consumer<MatchInfoData>(
+          builder: (context, matchInfoData, child) {
+            if (matchInfoData.isLoading) {
+              matchInfoData.initDatas(matchId);
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            playerStats = matchInfoData.matchInfo!.participants;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Container(
+                    color: ColorPalette().primary,
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          isWin ? "Victory" : "Defeat",
+                          style: TextStyle(
+                            color: isWin ? Colors.green[400] : Colors.red[400],
+                            fontSize: 24.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8.0),
+                        //TODO ezeket kiszervezni
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "${getGameModeByQueueId(matchInfoData.matchInfo!.queueId)} - ${getFormattedDuration(matchInfoData.matchInfo!.gameDuration)}",
+                              style: TextStyle(
+                                color:
+                                    isWin ? Colors.green[400] : Colors.red[400],
+                                fontSize: 16.0,
+                              ),
+                            ),
+                            SizedBox(width: 4.0),
+                            Icon(Icons.schedule,
+                                color:
+                                    isWin ? Colors.green[400] : Colors.red[400],
+                                size: 16.0),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                //SizedBox(height: 16.0),
+                SizedBox(height: 8.0),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Divider(
+                          color: Colors.blue,
+                          thickness: 1.0,
+                        ),
+                        _buildTeamHeader(
+                            matchInfoData.matchInfo!,
+                            "WINNER ${matchInfoData.matchInfo!.participants[0].win ? '(BLUE)' : '(RED)'}",
+                            true),
+                        SizedBox(height: 10),
+                        _buildPlayerList(matchInfoData.matchInfo!,
+                            matchInfoData.summonerInfos, true),
+                        SizedBox(height: 20),
+                        Divider(
+                          color: Colors.red,
+                          thickness: 1,
+                        ),
+                        _buildTeamHeader(
+                            matchInfoData.matchInfo!,
+                            "LOSER ${matchInfoData.matchInfo!.participants[0].win ? '(RED)' : '(BLUE)'}",
+                            false),
+                        SizedBox(height: 10),
+                        _buildPlayerList(matchInfoData.matchInfo!,
+                            matchInfoData.summonerInfos, false),
+                        SizedBox(height: 32.0),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
   }
 
   Widget _buildPlayerList(
@@ -156,7 +162,7 @@ class MatchInfoPage extends StatelessWidget {
     double lineWidth = 0;
     return ListView.separated(
       separatorBuilder: (BuildContext context, int index) {
-        return Divider(
+        return const Divider(
           color: Colors.grey,
           thickness: 1.0,
         );
@@ -240,60 +246,19 @@ class MatchInfoPage extends StatelessWidget {
                       SizedBox(height: 5),
                       Row(
                         children: [
-                          Container(
-                            width: 16,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(6),
-                              image: DecorationImage(
-                                image: AssetImage(
-                                    "assets/spells/${playerStat.summoner1Id}.png"),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 2.5),
-                          Container(
-                            width: 16,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(6),
-                              image: DecorationImage(
-                                image: AssetImage(
-                                    "assets/spells/${playerStat.summoner2Id}.png"),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 2.5),
-                          Container(
-                            width: 16,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: ColorPalette().primary,
-                              image: DecorationImage(
-                                image: AssetImage(
-                                    "assets/runes/${playerStat.perks.primaryStyle}.png"),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 2.5),
-                          Container(
-                            width: 16,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              image: DecorationImage(
-                                image: AssetImage(
-                                    "assets/runes/${playerStat.perks.secondaryStyle}.png"),
-                              ),
-                            ),
-                          ),
+                          _buildSummonerSpell(playerStat.summoner1Id),
+                          const SizedBox(width: 2.5),
+                          _buildSummonerSpell(playerStat.summoner2Id),
+                          const SizedBox(width: 2.5),
+                          _buildRune(playerStat.perks.primaryStyle),
+                          const SizedBox(width: 2.5),
+                          _buildRune(playerStat.perks.secondaryStyle),
                         ],
                       ),
                     ],
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -303,34 +268,13 @@ class MatchInfoPage extends StatelessWidget {
                           "${playerStat.totalCS} CS(${getCsPerMinute(matchInfo, playerStat)})",
                           style: TextStyle(fontSize: 9),
                         ),
-                        SizedBox(width: 5),
-                        Text(
-                          "${playerStat.kills} / ",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          "${playerStat.deaths}",
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          " / ${playerStat.assists}",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        const SizedBox(width: 5),
+                        _buildKDAText("${playerStat.kills} / ", Colors.black),
+                        _buildKDAText("${playerStat.deaths}", Colors.red),
+                        _buildKDAText(" / ${playerStat.assists}", Colors.black),
                       ],
                     ),
-                    SizedBox(height: 5),
+                    const SizedBox(height: 5),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -356,6 +300,44 @@ class MatchInfoPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Text _buildKDAText(String text, Color color) {
+    return Text(
+      "$text / ",
+      style: TextStyle(
+        color: color,
+        fontSize: 16.0,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  Container _buildSummonerSpell(int summonerId) {
+    return Container(
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        image: DecorationImage(
+          image: AssetImage("assets/spells/$summonerId.png"),
+        ),
+      ),
+    );
+  }
+
+  Container _buildRune(int runeId) {
+    return Container(
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: ColorPalette().primary,
+        image: DecorationImage(
+          image: AssetImage("assets/runes/$runeId.png"),
+        ),
+      ),
     );
   }
 
