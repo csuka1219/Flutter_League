@@ -1,3 +1,3 @@
-String apikey = "RGAPI-c98ee15a-c86d-4426-b84b-6342c4f91e2b";
+String apikey = "RGAPI-67d6367e-65e0-4cb8-8478-c77469101367";
 String apiUrl = "https://eun1.api.riotgames.com/lol/"; //TODO server
 String apiUrl2 = "https://europe.api.riotgames.com/lol/"; //TODO server

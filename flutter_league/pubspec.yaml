@@ -39,6 +39,7 @@ dependencies:
   flutter_svg: ^2.0.3
   http: ^0.13.5
   intl: ^0.18.0
+  tuple: ^2.0.1
 
 dev_dependencies:
   flutter_test:

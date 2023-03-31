@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
 import 'package:flutter_riot_api/screens/match_history.dart';
+import 'package:flutter_riot_api/screens/ongoing_match.dart';
 import 'package:flutter_riot_api/services/matchinfo_service.dart';
 
 class SummonerInfo extends StatelessWidget {
@@ -28,10 +29,10 @@ class SummonerInfo extends StatelessWidget {
         child: InkWell(
           onTap: () => {
             //TODO
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => SummonerDetailsPage()),
-            // ),
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => OnGoingMatchPage()),
+            ),
           },
           child: Column(
             children: [

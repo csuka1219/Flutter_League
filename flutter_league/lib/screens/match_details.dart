@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
 import 'package:flutter_riot_api/model/playerstats.dart';
+import 'package:tuple/tuple.dart';
 
 class MatchDetailsPage extends StatelessWidget {
   final List<PlayerStats> playerStats;
@@ -73,10 +74,8 @@ class MatchDetailsPage extends StatelessWidget {
   }
 
   Widget _buildTabContent(
-    String category,
-    List<PlayerStats> sortedPlayerStats,
-  ) {
-    Map<String, Function(PlayerStats)> categoryPropertyMap = {
+      String category, List<PlayerStats> sortedPlayerStats) {
+    final categoryPropertyMap = {
       'kills': (stats) => stats.kills,
       'gold': (stats) => stats.goldEarned,
       'damageDealt': (stats) => stats.totalDamageDealtToChampions,
@@ -85,167 +84,126 @@ class MatchDetailsPage extends StatelessWidget {
       'cs': (stats) => stats.totalCS,
     };
 
-// find the maximum value of data in the list
+    // Find the maximum value of the given category in the player stats.
     int maxData = sortedPlayerStats
         .map((stats) => categoryPropertyMap[category]!(stats))
         .reduce((a, b) => a > b ? a : b);
 
-// calculate the ratio for each data point
-    double ratio = 1.0;
-    if (maxData != 0) {
-      ratio = 1.0 / maxData;
-    }
+    // Calculate the ratio of data to maximum data.
+    final ratio = maxData == 0 ? 1.0 : 1.0 / maxData;
+
+    // Build the list view of player stats.
     return ListView.builder(
-      itemCount: sortedPlayerStats.length,
+      itemCount: sortedPlayerStats.length + 1,
       itemBuilder: (BuildContext context, int index) {
-        // build the widget
         if (index == 0) {
+          // Build the team comparison widget.
           return _buildTeamComparisonWidget(category, sortedPlayerStats);
-        } else {
-          final int playerStatsIndex = index - 1;
-          Color color = sortedPlayerStats[playerStatsIndex].win
-              ? Colors.blue
-              : Colors.red;
-          // calculate the data and adder values
-          int data;
-          switch (category) {
-            case 'kills':
-              data = sortedPlayerStats[playerStatsIndex].kills;
-              break;
-            case 'gold':
-              data = sortedPlayerStats[playerStatsIndex].goldEarned;
-              break;
-            case 'damageDealt':
-              data = sortedPlayerStats[playerStatsIndex]
-                  .totalDamageDealtToChampions;
-              break;
-            case 'damageTaken':
-              data = sortedPlayerStats[playerStatsIndex].totalDamageTaken;
-              break;
-            case 'wards':
-              data = sortedPlayerStats[playerStatsIndex].wardsPlaced;
-              break;
-            case 'cs':
-              data = sortedPlayerStats[playerStatsIndex].totalCS;
-              break;
-            default:
-              data = 0;
-          }
-          return Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.blue,
-                      width:
-                          (sortedPlayerStats[playerStatsIndex].summonerName ==
-                                  summonerName)
-                              ? 3
-                              : 0,
-                    ),
-                    image: DecorationImage(
-                      image: AssetImage(
-                          "assets/champions/${sortedPlayerStats[playerStatsIndex].championName}.png"),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        NumberFormat('#,##0', 'en_US').format(data),
-                        style: TextStyle(fontSize: 18),
-                      ),
-                      SizedBox(height: 8),
-                      LinearProgressIndicator(
-                        value: data.toDouble() * ratio,
-                        valueColor: AlwaysStoppedAnimation<Color>(color),
-                        backgroundColor: Colors.grey[300],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
         }
+
+        // Get the index of the player stats for the current row.
+        final playerStatsIndex = index - 1;
+
+        // Determine the color of the row based on whether the player won or lost.
+        final color =
+            sortedPlayerStats[playerStatsIndex].win ? Colors.blue : Colors.red;
+
+        // Get the data value for the given category and player stats.
+        final data = _getData(sortedPlayerStats[playerStatsIndex], category);
+
+        // Build the row for the player stats.
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.blue,
+                    //if you summoner is the summoner that you select earlier
+                    width: sortedPlayerStats[playerStatsIndex].summonerName ==
+                            summonerName
+                        ? 3
+                        : 0,
+                  ),
+                  //champion icon
+                  image: DecorationImage(
+                    image: AssetImage(
+                        "assets/champions/${sortedPlayerStats[playerStatsIndex].championName}.png"),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Show the data value for the given category.
+                    Text(
+                      NumberFormat('#,##0', 'en_US').format(data),
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                    const SizedBox(height: 8),
+                    // Show a progress bar for the data value relative to the maximum data value.
+                    LinearProgressIndicator(
+                      value: data.toDouble() * ratio,
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                      backgroundColor: Colors.grey[300],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
       },
     );
   }
 
+  // This function builds a widget that displays a comparison between two teams based on a given category
   Widget _buildTeamComparisonWidget(
       String category, List<PlayerStats> sortedPlayerStats) {
-    // Replace this with your logic for fetching and processing the data for the two teams
+    // Initialize team data to 0
     int team1Data = 0;
     int team2Data = 0;
 
-    var winTeam = sortedPlayerStats.where((stats) => stats.win).toList();
-    var loseTeam = sortedPlayerStats.where((stats) => !stats.win).toList();
+    // Get the team data for the given category
+    var restuple = _getTeamData(category, sortedPlayerStats);
+    team1Data = restuple.item1;
+    team2Data = restuple.item2;
 
-    switch (category) {
-      case 'kills':
-        team1Data = PlayerStats.sumByProperty(winTeam, (stats) => stats.kills);
-        team2Data = PlayerStats.sumByProperty(loseTeam, (stats) => stats.kills);
-        break;
-      case 'gold':
-        team1Data =
-            PlayerStats.sumByProperty(winTeam, (stats) => stats.goldEarned);
-        team2Data =
-            PlayerStats.sumByProperty(loseTeam, (stats) => stats.goldEarned);
-        break;
-      case 'damageDealt':
-        team1Data = PlayerStats.sumByProperty(
-            winTeam, (stats) => stats.totalDamageDealtToChampions);
-        team2Data = PlayerStats.sumByProperty(
-            loseTeam, (stats) => stats.totalDamageDealtToChampions);
-        break;
-      case 'damageTaken':
-        team1Data = PlayerStats.sumByProperty(
-            winTeam, (stats) => stats.totalDamageTaken);
-        team2Data = PlayerStats.sumByProperty(
-            loseTeam, (stats) => stats.totalDamageTaken);
-        break;
-      case 'wards':
-        team1Data =
-            PlayerStats.sumByProperty(winTeam, (stats) => stats.wardsPlaced);
-        team2Data =
-            PlayerStats.sumByProperty(loseTeam, (stats) => stats.wardsPlaced);
-        break;
-      case 'cs':
-        team1Data =
-            PlayerStats.sumByProperty(winTeam, (stats) => stats.totalCS);
-        team2Data =
-            PlayerStats.sumByProperty(loseTeam, (stats) => stats.totalCS);
-        break;
-      default:
-        team1Data = 0;
-        team2Data = 0;
-    }
-
+    // Return a container widget that displays the team data comparison
     return Container(
+      // Set the container color
       color: Colors.grey[200],
+      // Set the container padding
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      // Build the column widget that displays the team data
       child: Column(
         children: [
+          // Build a row widget that displays the team data for winner and loser
           Row(
+            // Set the row widget's main axis alignment
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            // Add two widgets that display the team data for winner and loser
             children: [
               _buildTeamDataWidget('Winner', team1Data, Colors.blue),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               _buildTeamDataWidget('Loser', team2Data, Colors.red),
             ],
           ),
-          SizedBox(height: 16),
+          // Add a SizedBox widget for spacing
+          const SizedBox(height: 16),
+          // Add a LinearProgressIndicator widget that displays the percentage of the team data for the winner
           LinearProgressIndicator(
+            // Calculate the value of the progress indicator
             value: team1Data / (team1Data + team2Data),
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+            // Set the progress indicator value color
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+            // Set the progress indicator background color
             backgroundColor: Colors.red,
           ),
         ],
@@ -253,19 +211,21 @@ class MatchDetailsPage extends StatelessWidget {
     );
   }
 
+  // Widget to display team data
   Widget _buildTeamDataWidget(String teamName, int data, Color color) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        // Display team name with a bold font
         Text(
           teamName,
           style: TextStyle(
               fontSize: 18, fontWeight: FontWeight.bold, color: color),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
+        // Display data with comma separators and a bold font
         Text(
-          NumberFormat('#,##0', 'en_US').format(
-              data), // Replace this with the sum of the specified category for the team
+          NumberFormat('#,##0', 'en_US').format(data),
           style: TextStyle(
               fontSize: 24, color: color, fontWeight: FontWeight.bold),
         ),
@@ -276,6 +236,7 @@ class MatchDetailsPage extends StatelessWidget {
   List<PlayerStats> orderByProperty(
       List<PlayerStats> playerStatsList, String property) {
     switch (property) {
+      // Sort the list by the provided property using a descending order
       case "gold":
         playerStatsList.sort((a, b) => b.goldEarned.compareTo(a.goldEarned));
         break;
@@ -296,11 +257,70 @@ class MatchDetailsPage extends StatelessWidget {
       case "totalCS":
         playerStatsList.sort((a, b) => b.totalCS.compareTo(a.totalCS));
         break;
+      // If an invalid property is provided, sort by gold by default
       default:
-        // Sort by gold by default
         playerStatsList.sort((a, b) => b.goldEarned.compareTo(a.goldEarned));
     }
 
+// Return the sorted list
     return playerStatsList;
+  }
+
+  int _getData(PlayerStats stats, String category) {
+    switch (category) {
+      case 'kills':
+        return stats.kills;
+      case 'gold':
+        return stats.goldEarned;
+      case 'damageDealt':
+        return stats.totalDamageDealtToChampions;
+      case 'damageTaken':
+        return stats.totalDamageTaken;
+      case 'wards':
+        return stats.wardsPlaced;
+      case 'cs':
+        return stats.totalCS;
+      default:
+        return 0;
+    }
+  }
+
+  Tuple2<int, int> _getTeamData(
+      String category, List<PlayerStats> sortedPlayerStats) {
+    var winTeam = sortedPlayerStats.where((stats) => stats.win).toList();
+    var loseTeam = sortedPlayerStats.where((stats) => !stats.win).toList();
+
+    switch (category) {
+      case 'kills':
+        return Tuple2(
+            PlayerStats.sumByProperty(winTeam, (stats) => stats.kills),
+            PlayerStats.sumByProperty(loseTeam, (stats) => stats.kills));
+      case 'gold':
+        return Tuple2(
+            PlayerStats.sumByProperty(winTeam, (stats) => stats.goldEarned),
+            PlayerStats.sumByProperty(loseTeam, (stats) => stats.goldEarned));
+      case 'damageDealt':
+        return Tuple2(
+            PlayerStats.sumByProperty(
+                winTeam, (stats) => stats.totalDamageDealtToChampions),
+            PlayerStats.sumByProperty(
+                loseTeam, (stats) => stats.totalDamageDealtToChampions));
+      case 'damageTaken':
+        return Tuple2(
+            PlayerStats.sumByProperty(
+                winTeam, (stats) => stats.totalDamageTaken),
+            PlayerStats.sumByProperty(
+                loseTeam, (stats) => stats.totalDamageTaken));
+      case 'wards':
+        return Tuple2(
+            PlayerStats.sumByProperty(winTeam, (stats) => stats.wardsPlaced),
+            PlayerStats.sumByProperty(loseTeam, (stats) => stats.wardsPlaced));
+      case 'cs':
+        return Tuple2(
+            PlayerStats.sumByProperty(winTeam, (stats) => stats.totalCS),
+            PlayerStats.sumByProperty(loseTeam, (stats) => stats.totalCS));
+      default:
+        return const Tuple2(0, 0);
+    }
   }
 }
