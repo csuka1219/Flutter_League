@@ -10,23 +10,80 @@ class OnGoingMatchPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ongoing Match Details'),
-      ),
+          iconTheme: IconThemeData(color: ColorPalette().secondary),
+          backgroundColor: ColorPalette().primary,
+          title: Text(
+            'Live Game',
+            style: TextStyle(color: ColorPalette().secondary),
+          ),),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 20),
-          Center(
-            child: Text(
-              'Team Blue',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+        children: [SizedBox(height: 10,),
+          Row(
+            children: [
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0,vertical: 10),
+                    child: Text(
+                      'Ranked Solo/Duo',
+                      style: TextStyle(fontSize: 12,),
+                    ),),
+                ],
+              ),
+              Container(height: 20, child: VerticalDivider(color: Colors.black,)),
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: Text(
+                      '32:13',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-          SizedBox(height: 20),
+          Divider(height: 1,),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0,vertical: 10),
+                    child: Text(
+                      'BLUE TEAM',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.blue),
+                    ),
+                  )
+                ],
+              ),
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: Text(
+                      'RED TEAM',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.red),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          //SizedBox(height: 20),
           playerCard(
             playerImageUrl:
                 'https://opgg-static.akamaized.net/meta/images/lol/champion/Veigar.png?image=c_crop,h_103,w_103,x_9,y_9/q_auto,f_webp,w_96&v=1679644970497',
             playerName: 'Player 1',
+            championName: 'Jinx',
+            kda: '2/1/3',
+          ),
+          playerCard(
+            playerImageUrl:
+                'https://opgg-static.akamaized.net/meta/images/lol/champion/Veigar.png?image=c_crop,h_103,w_103,x_9,y_9/q_auto,f_webp,w_96&v=1679644970497',
+            playerName: 'Player 2',
             championName: 'Jinx',
             kda: '2/1/3',
           ),
@@ -51,13 +108,7 @@ class OnGoingMatchPage extends StatelessWidget {
             championName: 'Jinx',
             kda: '2/1/3',
           ),
-          playerCard(
-            playerImageUrl:
-                'https://opgg-static.akamaized.net/meta/images/lol/champion/Veigar.png?image=c_crop,h_103,w_103,x_9,y_9/q_auto,f_webp,w_96&v=1679644970497',
-            playerName: 'Player 1',
-            championName: 'Jinx',
-            kda: '2/1/3',
-          ),
+          SizedBox(height: 40,child: Container(color: Color.fromARGB(255, 238, 238, 238)),),
         ],
       ),
     );
