@@ -10,6 +10,8 @@ import 'package:flutter_riot_api/widgets/match_item.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/matchhistory_provider.dart';
+import '../utils/pulldata.dart';
+import '../utils/test2.dart';
 
 //TODO appbar jobb felső sarok kedvencemnek választás
 //TODO live game betöltés
@@ -221,6 +223,11 @@ class MatchHistoryPage extends StatelessWidget {
                   LiveGame? liveGame = await context
                       .read<MatchHistoryData>()
                       .fetchLiveGameData(summonerInfo.id);
+                  if (liveGame == null) return;
+                  var champion_roles = await pullData();
+                  //myList.take(5).toList()
+                  getTeamRoles(
+                      liveGame.participants.take(5).toList(), champion_roles);
                   if (liveGame != null) {
                     Navigator.push(
                       context,

@@ -6,6 +6,9 @@ import 'package:flutter_riot_api/screens/live_match.dart';
 import 'package:flutter_riot_api/services/matchinfo_service.dart';
 import 'package:flutter_riot_api/services/summoner_service.dart';
 
+import '../utils/pulldata.dart';
+import '../utils/test.dart';
+
 class SummonerInfo extends StatelessWidget {
   final Summoner summonerInfo;
   const SummonerInfo({super.key, required this.summonerInfo});
@@ -31,6 +34,11 @@ class SummonerInfo extends StatelessWidget {
             const EdgeInsets.only(top: 20, bottom: 25, right: 20, left: 20),
         child: InkWell(
           onTap: () async {
+            // var champion_roles = await pullData();
+            // List<int> champions = [145, 122, 90, 412, 121];
+            // var roles = getPositions(champion_roles, champions);
+            // int b = 0;
+            //List<int> champions = [145, 122, 90, 412, 121]; ['Kai'Sa', 'Darius', 'Malzahar', 'Thresh', 'Kha'Zix']
             Summoner? summoner = await getSummonerByName(
               summonerInfo.name,
             );
