@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
+import 'package:flutter_riot_api/providers/home_provider.dart';
 import 'package:flutter_riot_api/screens/match_history.dart';
 import 'package:flutter_riot_api/services/summoner_service.dart';
 import 'package:flutter_riot_api/widgets/summoner_info.dart';
@@ -8,9 +9,12 @@ import 'package:provider/provider.dart';
 import 'package:flutter_riot_api/providers/drop_provider.dart';
 import 'package:flutter_riot_api/widgets/custom_appbar.dart';
 
+import '../utils/storage.dart';
+
 class HomeScreen extends StatelessWidget {
   HomeScreen({Key? key}) : super(key: key);
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -33,21 +37,43 @@ class HomeScreen extends StatelessWidget {
               child: SingleChildScrollView(
                 child: IgnorePointer(
                   ignoring: context.watch<DropDownProvider>().dropdownOpen,
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 20,
-                      ),
-                      _buildSearchBar(context, width),
-                      _buildSummonerInfo(),
-                      _buildSummonerInfo(),
-                    ],
-                  ),
+                  child: ChangeNotifierProvider(
+                      create: (_) => HomePageData(),
+                      child: Consumer<HomePageData>(
+                          builder: (context, homePageData, child) {
+                        if (homePageData.summoners.isEmpty ||
+                            homePageData.isLoading) {
+                          homePageData.initSummoners();
+                        }
+                        return Column(
+                          children: [
+                            SizedBox(
+                              height: 20,
+                            ),
+                            _buildSearchBar(context, width),
+                            homePageData.isLoading == true
+                                ? Center(
+                                    child: CircularProgressIndicator(),
+                                  )
+                                : Column(
+                                    children: [
+                                      for (Summoner? summoner
+                                          in homePageData.summoners)
+                                        if (summoner != null)
+                                          _buildSummonerInfo(summoner),
+                                    ],
+                                  )
+                          ],
+                        );
+                      })),
                 ),
               ),
             ),
           ),
           _buildDropDownMenu(context, height),
+          Container(
+            height: double.infinity,
+          )
         ],
       ),
     );
@@ -72,7 +98,6 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildSearchBar(BuildContext context, double width) {
-    String summonerName = "";
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -91,11 +116,18 @@ class HomeScreen extends StatelessWidget {
                   Summoner? summonerInfo = await getSummonerByName(
                     context.read<DropDownProvider>().summomnerName,
                   );
+                  if (summonerInfo == null) return; //TODO nem létező summoner
+                  List<String> summonerNames = await loadSummoners();
+                  bool isFavourite = false;
+                  if (summonerNames.any((s) => s == summonerInfo.name)) {
+                    isFavourite = true;
+                  }
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => MatchHistoryPage(
-                              summonerInfo: summonerInfo!,
+                              summonerInfo: summonerInfo,
+                              isFavourite: isFavourite,
                             )),
                   );
                 },
@@ -104,12 +136,18 @@ class HomeScreen extends StatelessWidget {
                 child: TextField(
                   onSubmitted: (value) async {
                     Summoner? summonerInfo = await getSummonerByName(value);
+                    if (summonerInfo == null) return; //TODO nem létező summoner
+                    List<String> summonerNames = await loadSummoners();
+                    bool isFavourite = false;
+                    if (summonerNames.any((s) => s == summonerInfo.name)) {
+                      isFavourite = true;
+                    }
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          //TODO nem létező summoner
                           builder: (context) => MatchHistoryPage(
                                 summonerInfo: summonerInfo!,
+                                isFavourite: isFavourite,
                               )),
                     );
                   },
@@ -129,8 +167,10 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSummonerInfo() {
-    return SummonerInfo();
+  Widget _buildSummonerInfo(Summoner summoner) {
+    return SummonerInfo(
+      summonerInfo: summoner,
+    );
   }
 
   Widget _buildDropDownMenu(BuildContext context, double height) {

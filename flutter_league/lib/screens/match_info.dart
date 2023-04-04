@@ -10,6 +10,8 @@ import 'package:flutter_riot_api/screens/match_history.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/storage.dart';
+
 class MatchInfoPage extends StatelessWidget {
   final String summonerName;
   final bool isWin;
@@ -25,38 +27,7 @@ class MatchInfoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     List<PlayerStats> playerStats = [];
     return Scaffold(
-      appBar: AppBar(
-        iconTheme:
-            IconThemeData(color: isWin ? Colors.green[400] : Colors.red[400]),
-        backgroundColor: ColorPalette().primary,
-        title: Text(
-          "Match Info",
-          style: TextStyle(color: isWin ? Colors.green[400] : Colors.red[400]),
-        ),
-        actions: [
-          IconButton(
-            color: ColorPalette().secondary,
-            icon: Icon(
-              Icons.bar_chart,
-              color: isWin ? Colors.green[400] : Colors.red[400],
-            ),
-            onPressed: () => {
-              if (playerStats.isNotEmpty)
-                {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MatchDetailsPage(
-                        playerStats: playerStats,
-                        summonerName: summonerName,
-                      ),
-                    ),
-                  ),
-                },
-            },
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(playerStats, context),
       body: ChangeNotifierProvider(
         create: (_) => MatchInfoData(),
         child: Consumer<MatchInfoData>(
@@ -157,6 +128,41 @@ class MatchInfoPage extends StatelessWidget {
     );
   }
 
+  AppBar _buildAppBar(List<PlayerStats> playerStats, BuildContext context) {
+    return AppBar(
+      iconTheme:
+          IconThemeData(color: isWin ? Colors.green[400] : Colors.red[400]),
+      backgroundColor: ColorPalette().primary,
+      title: Text(
+        "Match Info",
+        style: TextStyle(color: isWin ? Colors.green[400] : Colors.red[400]),
+      ),
+      actions: [
+        IconButton(
+          color: ColorPalette().secondary,
+          icon: Icon(
+            Icons.bar_chart,
+            color: isWin ? Colors.green[400] : Colors.red[400],
+          ),
+          onPressed: () => {
+            if (playerStats.isNotEmpty)
+              {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MatchDetailsPage(
+                      playerStats: playerStats,
+                      summonerName: summonerName,
+                    ),
+                  ),
+                ),
+              },
+          },
+        ),
+      ],
+    );
+  }
+
   Widget _buildPlayerList(
       Match matchInfo, List<Summoner?> summonerInfos, bool isWinner) {
     double lineWidth = 0;
@@ -183,14 +189,22 @@ class MatchInfoPage extends StatelessWidget {
             isWinner ? summonerInfos.sublist(0, 5) : summonerInfos.sublist(5);
 
         return GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MatchHistoryPage(
-                summonerInfo: tempSummonerList[index]!,
+          onTap: () async {
+            List<String> summonerNames = await loadSummoners();
+            bool isFavourite = false;
+            if (summonerNames.any((s) => s == tempSummonerList[index]!.name)) {
+              isFavourite = true;
+            }
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MatchHistoryPage(
+                  summonerInfo: tempSummonerList[index]!,
+                  isFavourite: isFavourite,
+                ),
               ),
-            ),
-          ),
+            );
+          },
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
             margin: EdgeInsets.only(bottom: 2),
@@ -217,31 +231,34 @@ class MatchInfoPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            "${playerStat.summonerName.length < 15 ? playerStat.summonerName : playerStat.summonerName.substring(0, 10) + '...'}",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                      FittedBox(
+                        fit: BoxFit.fitWidth,
+                        child: Row(
+                          children: [
+                            Text(
+                              "${playerStat.summonerName}",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 4),
-                          Row(
-                            children: [
-                              RankIcon(
-                                summonerInfo: tempSummonerList[index]!,
-                                queueId: matchInfo.queueId,
-                              ),
-                              SizedBox(width: 2),
-                              Text(
-                                //TODO
-                                getRank(matchInfo, tempSummonerList[index]!),
-                                style: TextStyle(fontSize: 8),
-                              ),
-                            ],
-                          ),
-                        ],
+                            SizedBox(width: 4),
+                            Row(
+                              children: [
+                                RankIcon(
+                                  summonerInfo: tempSummonerList[index]!,
+                                  queueId: matchInfo.queueId,
+                                ),
+                                SizedBox(width: 2),
+                                Text(
+                                  //TODO
+                                  getRank(matchInfo, tempSummonerList[index]!),
+                                  style: TextStyle(fontSize: 8),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                       SizedBox(height: 5),
                       Row(

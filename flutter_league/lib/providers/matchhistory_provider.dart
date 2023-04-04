@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riot_api/model/live_game.dart';
 import 'package:flutter_riot_api/model/match_preview.dart';
 import 'package:flutter_riot_api/services/matchhistory_service.dart';
 
@@ -80,5 +81,21 @@ class MatchHistoryData with ChangeNotifier {
     } else {
       notifyListeners();
     }
+  }
+
+  bool _isSearchingLiveGame = false;
+
+  bool get isSearchingLiveGame => _isSearchingLiveGame;
+
+  set isSearchingLiveGame(bool value) {
+    _isSearchingLiveGame = value;
+    notifyListeners();
+  }
+
+  Future<LiveGame?> fetchLiveGameData(String summonerId) async {
+    isSearchingLiveGame = true;
+    LiveGame? response = await getLiveGame(summonerId);
+    isSearchingLiveGame = false;
+    return response;
   }
 }

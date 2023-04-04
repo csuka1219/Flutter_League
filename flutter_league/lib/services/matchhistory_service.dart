@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_riot_api/model/live_game.dart';
 import 'package:flutter_riot_api/model/match_preview.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riot_api/utils/constants.dart';
@@ -49,4 +50,23 @@ Future<List<String>> getMatchIds(String puuid) async {
   }
 
   return response;
+}
+
+Future<LiveGame?> getLiveGame(String summonerId) async {
+  final response;
+  //https://eun1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/?api_key=RGAPI-b92bd82f-9292-4b10-8051-f100e5a1d1aa
+  final liveGameResponse = await http.get(
+    Uri.parse(
+        '${apiUrl}spectator/v4/active-games/by-summoner/$summonerId/?api_key=$apikey'), // Send a GET request to the Riot API to fetch live game data for the summoner
+  );
+
+  if (liveGameResponse.statusCode == 200) {
+    // If the request was successful
+    response = jsonDecode(liveGameResponse.body);
+    final liveGameObjresponse = LiveGame.fromJson(response);
+    return liveGameObjresponse;
+  } else {
+    // TODO: handle error
+  }
+  return null;
 }

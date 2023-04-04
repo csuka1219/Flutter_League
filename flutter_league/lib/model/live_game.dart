@@ -1,21 +1,21 @@
 class LiveGame {
-  final String gameType;
+  final int gameModeId;
   final List<Participant> participants;
   final int gameLength;
 
   LiveGame(
-      {required this.gameType,
+      {required this.gameModeId,
       required this.participants,
       required this.gameLength});
 
   factory LiveGame.fromJson(Map<String, dynamic> json) {
     List<Participant> participants = [];
     for (var participantJson in json['participants']) {
-      Participant participant = Participant.fromJson(json['participants']);
+      Participant participant = Participant.fromJson(participantJson);
       participants.add(participant);
     }
     return LiveGame(
-        gameType: json['gameType'],
+        gameModeId: json['gameQueueConfigId'],
         participants: participants,
         gameLength: json['gameLength']);
   }
@@ -49,7 +49,7 @@ class Participant {
         championId: json['championId'],
         summonerName: json['summonerName'],
         summonerId: json['summonerId'],
-        perkStyle: json['perkStyle'],
-        perkSubStyle: json['perkSubStyle']);
+        perkStyle: json['perks']['perkIds'][0],
+        perkSubStyle: json['perks']['perkSubStyle']);
   }
 }

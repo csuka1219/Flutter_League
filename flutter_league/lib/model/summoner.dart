@@ -40,6 +40,20 @@ class Summoner {
           : null,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'accountId': accountId,
+      'puuid': puuid,
+      'name': name,
+      'profileIconId': profileIconId,
+      'revisionDate': revisionDate,
+      'summonerLevel': summonerLevel,
+      'soloRank': soloRank?.toJson(),
+      'flexRank': flexRank?.toJson(),
+    };
+  }
 }
 
 class Rank {
@@ -58,5 +72,15 @@ class Rank {
         leaguePoints: json['leaguePoints'],
         wins: json['wins'],
         losses: json['losses']);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'tier': tier,
+      'rank': rank,
+      'leaguePoints': leaguePoints,
+      'wins': wins,
+      'losses': losses,
+    };
   }
 }

@@ -1,8 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
+import 'package:flutter_riot_api/model/live_game.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
+import 'package:flutter_riot_api/providers/matchhistoryappbar_provider.dart';
+import 'package:flutter_riot_api/screens/live_match.dart';
 import 'package:flutter_riot_api/widgets/match_item.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/matchhistory_provider.dart';
 
 //TODO appbar jobb felső sarok kedvencemnek választás
@@ -10,8 +16,10 @@ import '../providers/matchhistory_provider.dart';
 
 class MatchHistoryPage extends StatelessWidget {
   final Summoner summonerInfo;
+  final bool isFavourite;
 
-  const MatchHistoryPage({super.key, required this.summonerInfo});
+  const MatchHistoryPage(
+      {super.key, required this.summonerInfo, required this.isFavourite});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +29,7 @@ class MatchHistoryPage extends StatelessWidget {
 
     return Scaffold(
       // Build the app bar
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar(isFavourite),
       body: ChangeNotifierProvider(
         // Provide the MatchHistoryData to the widget tree
         create: (_) => MatchHistoryData(startSoloQueue),
@@ -73,6 +81,7 @@ class MatchHistoryPage extends StatelessWidget {
                     itemBuilder: (BuildContext context, int index) {
                       if (index != matchHistoryData.matchHistory.length) {
                         return MatchItem(
+                          //TODO itt volt egy hiba, mikor új meccs kerülne be
                           matchHistory: matchHistoryData.matchHistory[index]!,
                           summonerInfo: summonerInfo,
                           matchHistoryData: matchHistoryData,
@@ -91,7 +100,7 @@ class MatchHistoryPage extends StatelessWidget {
     );
   }
 
-  AppBar _buildAppBar() {
+  AppBar _buildAppBar(bool isFavourite) {
     return AppBar(
       iconTheme: IconThemeData(
         color: ColorPalette().secondary, //change your color here
@@ -101,6 +110,31 @@ class MatchHistoryPage extends StatelessWidget {
         summonerInfo.name,
         style: TextStyle(color: ColorPalette().secondary),
       ),
+      actions: [
+        ChangeNotifierProvider(
+          create: (_) => MatchHistoryAppBarIcon(isFavourite),
+          child: Consumer<MatchHistoryAppBarIcon>(
+            builder: (context, appBarData, child) {
+              return IconButton(
+                splashRadius: 1,
+                color: ColorPalette().secondary,
+                icon: Icon(
+                  appBarData.isFavourite
+                      ? Icons.favorite
+                      : Icons.favorite_outline,
+                  color: ColorPalette().secondary,
+                ),
+                onPressed: () {
+                  appBarData.isFavourite
+                      ? appBarData.deleteSummoner(summonerInfo)
+                      : appBarData.saveSummoners(summonerInfo);
+                  appBarData.isFavourite = !appBarData.isFavourite;
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -183,7 +217,21 @@ class MatchHistoryPage extends StatelessWidget {
           Row(
             children: [
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () async {
+                  LiveGame? liveGame = await context
+                      .read<MatchHistoryData>()
+                      .fetchLiveGameData(summonerInfo.id);
+                  if (liveGame != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => LiveGamePage(
+                          liveGameData: liveGame,
+                        ),
+                      ),
+                    );
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   //TODO: live game - Set the background color based on whether a live game is available or not
                   backgroundColor: !true ? Colors.grey[600] : Colors.green,
@@ -193,14 +241,24 @@ class MatchHistoryPage extends StatelessWidget {
                   padding:
                       EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
                 ),
-                child: Text(
-                  'LIVE',
-                  style: TextStyle(
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+                child: context.watch<MatchHistoryData>().isSearchingLiveGame
+                    ? Container(
+                        width: 24,
+                        height: 24,
+                        padding: const EdgeInsets.all(2.0),
+                        child: const CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 3,
+                        ),
+                      )
+                    : Text(
+                        'LIVE',
+                        style: TextStyle(
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
               )
             ],
           ),
@@ -288,8 +346,8 @@ class MatchHistoryPage extends StatelessWidget {
   }
 
   // This method returns a widget that displays either a progress indicator or
-// a button to load more data, depending on whether the match history data is
-// currently being loaded or not.
+  // a button to load more data, depending on whether the match history data is
+  // currently being loaded or not.
   Widget _buildLoadMoreButton(
       BuildContext context, MatchHistoryData matchHistoryData) {
     // The Container widget provides margin around the button or progress
@@ -370,7 +428,7 @@ class MatchHistoryPage extends StatelessWidget {
     return "${minutes}m ${formattedSeconds}s";
   }
 
-// This function maps the queueId to the corresponding game mode name
+  // This function maps the queueId to the corresponding game mode name
   String getGameModeByQueueId(int queueId) {
     final Map<int, String> gameModes = {
       0: 'Custom',
