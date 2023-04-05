@@ -103,13 +103,9 @@ List<dynamic> getPositions(
   };
 
 // Try all possible combinations of unknown champions in unknown positions
-  for (int i = 0; i < unknownChampions.length; i++) {
+  for (var champs in permutations(unknownChampions, unknownPositions.length)) {
     for (int j = 0; j < unknownPositions.length; j++) {
-      try {
-        testComposition[unknownPositions[j]] = unknownChampions[j];
-      } on RangeError catch (_) {
-        testComposition[unknownPositions[j]] = unknownChampions[0];
-      }
+      testComposition[unknownPositions[j]] = champs[j];
     }
     //for (int j = 0; j < unknownPositions.length; j++) {
     Map<String, int> tempPositions = Map.from(testComposition);
@@ -127,28 +123,6 @@ List<dynamic> getPositions(
     //}
   }
 
-  // List<List<int>> permutations =
-  //     _permutations(unknownChampions, unknownPositions.length);
-  // for (List<int> champs in permutations) {
-  //   Map<String, int> testComposition = Map<String, int>.from(bestPositions);
-  //   for (int i = 0; i < unknownPositions.length; i++) {
-  //     testComposition[unknownPositions[i]] = champs[i];
-  //   }
-
-  //   double metric = calculateMetric(championPositions, testComposition);
-  //   if (metric > bestMetric) {
-  //     secondBestMetric = bestMetric;
-  //     secondBestPositions = Map<String, int>.from(bestPositions);
-  //     bestMetric = metric;
-  //     bestPositions = Map<String, int>.from(testComposition);
-  //   }
-
-  //   if (bestMetric > metric && metric > secondBestMetric) {
-  //     secondBestMetric = metric;
-  //     secondBestPositions = Map<String, int>.from(testComposition);
-  //   }
-  // }
-
 // If we didn't find a better composition, just return the original one
   if (secondBestPositions == null) {
     return bestPositions.values.toList();
@@ -162,21 +136,17 @@ List<dynamic> getPositions(
     confidence
   ];
 }
-
-// Helper function to generate permutations of a list of integers
-List<List<int>> _permutations(List<int> list, int length) {
+Iterable<List<T>> permutations<T>(List<T> items, int length) sync* {
   if (length == 0) {
-    return [[]];
+    yield <T>[];
+    return;
   }
-  List<List<int>> result = [];
-  for (int i = 0; i < list.length; i++) {
-    int element = list[i];
-    List<int> remaining = List<int>.from(list);
-    remaining.remove(element);
-    List<List<int>> permutations = _permutations(remaining, length - 1);
-    for (List<int> perm in permutations) {
-      result.add([element, ...perm]);
+
+  for (int i = 0; i < items.length; i++) {
+    T current = items[i];
+    List<T> remaining = List<T>.from(items)..removeAt(i);
+    for (List<T> permutation in permutations(remaining, length - 1)) {
+      yield [current, ...permutation];
     }
   }
-  return result;
 }

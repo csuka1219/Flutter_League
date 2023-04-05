@@ -224,10 +224,9 @@ class MatchHistoryPage extends StatelessWidget {
                       .read<MatchHistoryData>()
                       .fetchLiveGameData(summonerInfo.id);
                   if (liveGame == null) return;
-                  var champion_roles = await pullData();
                   //myList.take(5).toList()
-                  getTeamRoles(
-                      liveGame.participants.take(5).toList(), champion_roles);
+                  getRoles(
+                      liveGame.participants);
                   if (liveGame != null) {
                     Navigator.push(
                       context,
