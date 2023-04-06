@@ -4,16 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
 import 'package:flutter_riot_api/model/live_game.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
+import 'package:flutter_riot_api/providers/home_provider.dart';
 import 'package:flutter_riot_api/providers/matchhistoryappbar_provider.dart';
 import 'package:flutter_riot_api/screens/live_match.dart';
+import 'package:flutter_riot_api/utils/loldata_string.dart';
 import 'package:flutter_riot_api/utils/sortby_role.dart';
 import 'package:flutter_riot_api/widgets/match_item.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/matchhistory_provider.dart';
-import '../utils/pulldata.dart';
-//TODO appbar jobb felső sarok kedvencemnek választás
-//TODO live game betöltés
 
 class MatchHistoryPage extends StatelessWidget {
   final Summoner summonerInfo;
@@ -30,7 +28,7 @@ class MatchHistoryPage extends StatelessWidget {
 
     return Scaffold(
       // Build the app bar
-      appBar: _buildAppBar(isFavourite),
+      appBar: _buildAppBar(context, isFavourite),
       body: ChangeNotifierProvider(
         // Provide the MatchHistoryData to the widget tree
         create: (_) => MatchHistoryData(startSoloQueue),
@@ -101,7 +99,7 @@ class MatchHistoryPage extends StatelessWidget {
     );
   }
 
-  AppBar _buildAppBar(bool isFavourite) {
+  AppBar _buildAppBar(BuildContext bContext, bool isFavourite) {
     return AppBar(
       iconTheme: IconThemeData(
         color: ColorPalette().secondary, //change your color here
@@ -127,8 +125,18 @@ class MatchHistoryPage extends StatelessWidget {
                 ),
                 onPressed: () {
                   appBarData.isFavourite
-                      ? appBarData.deleteSummoner(summonerInfo)
-                      : appBarData.saveSummoners(summonerInfo);
+                      ? {
+                          appBarData.deleteSummoner(summonerInfo),
+                          bContext
+                              .read<HomeProvider>()
+                              .removeSummoner(summonerInfo)
+                        }
+                      : {
+                          appBarData.saveSummoners(summonerInfo),
+                          bContext
+                              .read<HomeProvider>()
+                              .addSummoner(summonerInfo)
+                        };
                   appBarData.isFavourite = !appBarData.isFavourite;
                 },
               );
@@ -147,7 +155,7 @@ class MatchHistoryPage extends StatelessWidget {
         ? summonerInfo.soloRank?.leaguePoints // If solo queue, get solo rank LP
         : summonerInfo
             .flexRank?.leaguePoints; // If flex queue, get flex rank LP
-    final winRate = getWinrate(isSoloQueue);
+    final winRate = getWinrate(isSoloQueue, summonerInfo);
 
     // Get the rank tier, rank (e.g. Platinum IV), based on the queue type
     final rankTier =
@@ -223,9 +231,8 @@ class MatchHistoryPage extends StatelessWidget {
                       .read<MatchHistoryData>()
                       .fetchLiveGameData(summonerInfo.id);
                   if (liveGame == null) return;
-                  
-                  sortByRole(
-                      liveGame.participants);
+
+                  sortByRole(liveGame.participants);
 
                   if (liveGame != null) {
                     Navigator.push(
@@ -395,63 +402,5 @@ class MatchHistoryPage extends StatelessWidget {
                   ),
                 ),
     );
-  }
-
-  /// Returns a formatted string representing the winrate of the summoner in
-  /// either solo queue or flex queue.
-  ///
-  /// If `isSoloQueue` is true, the method will calculate the winrate based on the
-  /// summoner's solo queue rank, otherwise it will calculate based on their flex
-  /// queue rank.
-  String getWinrate(bool isSoloQueue) {
-    // Calculate winrate based on the selected queue type
-    double winrate = isSoloQueue
-        ? summonerInfo.soloRank!.wins! /
-            (summonerInfo.soloRank!.wins! + summonerInfo.soloRank!.losses!)
-        : summonerInfo.flexRank!.wins! /
-            (summonerInfo.flexRank!.wins! + summonerInfo.flexRank!.losses!);
-
-    // Round the winrate to the nearest integer and convert it to a string
-    String winrateString = (winrate * 100).round().toString();
-
-    return winrateString;
-  }
-
-  String getKdaAvg(int k, int d, int a) {
-    return ((k + a) / d).toStringAsFixed(2);
-  }
-
-  // Returns a formatted string for game duration
-  String getFormattedDuration(int gameDurationInSeconds) {
-    // Convert game duration in seconds to minutes and round down
-    int minutes = (gameDurationInSeconds / 60).floor();
-
-    // Calculate remaining seconds and pad with leading zero if necessary
-    int seconds = gameDurationInSeconds % 60;
-    String formattedSeconds = seconds.toString().padLeft(2, '0');
-
-    // Combine minutes and seconds into formatted string
-    return "${minutes}m ${formattedSeconds}s";
-  }
-
-  // This function maps the queueId to the corresponding game mode name
-  String getGameModeByQueueId(int queueId) {
-    final Map<int, String> gameModes = {
-      0: 'Custom',
-      400: 'Normal Draft Pick',
-      420: 'Ranked Solo/Duo',
-      430: 'Normal Blind Pick',
-      440: 'Ranked Flex',
-      450: 'ARAM',
-      700: 'Clash',
-      900: 'URF',
-      1300: 'Nexus Blitz',
-      1400: 'ARAM Snowdown',
-      2000: 'TFT',
-      2010: 'TFT Ranked',
-    };
-
-// Return the game mode name for the given queueId
-    return gameModes[queueId]!;
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter_riot_api/model/summoner.dart';
 import 'package:flutter_riot_api/providers/livegame_provider.dart';
 import 'package:flutter_riot_api/screens/match_history.dart';
 import 'package:flutter_riot_api/utils/getchampionname.dart';
+import 'package:flutter_riot_api/utils/loldata_string.dart';
 import 'package:provider/provider.dart';
 
 import '../utils/storage.dart';
@@ -330,53 +331,57 @@ class LiveGamePage extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(
                             width: 5,
                           ),
-                          GestureDetector(
-                            onTap: () async {
-                              List<String> summonersNames =
-                                  await loadSummoners();
-                              bool isFavourite = false;
-                              if (summonersNames
-                                  .any((s) => s == blueSummonerInfo.name)) {
-                                isFavourite = true;
-                              }
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => MatchHistoryPage(
-                                    summonerInfo: blueSummonerInfo,
-                                    isFavourite: isFavourite,
+                          FittedBox(
+                            fit: BoxFit.fitWidth,
+                            child: GestureDetector(
+                              onTap: () async {
+                                List<String> summonersNames =
+                                    await loadSummoners();
+                                bool isFavourite = false;
+                                if (summonersNames
+                                    .any((s) => s == blueSummonerInfo.name)) {
+                                  isFavourite = true;
+                                }
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MatchHistoryPage(
+                                      summonerInfo: blueSummonerInfo,
+                                      isFavourite: isFavourite,
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                            child: Row(
-                              children: [
-                                isUnrankedBlue
-                                    ? Container()
-                                    : Container(
-                                        width: 22.0,
-                                        height: 22.0,
-                                        decoration: BoxDecoration(
-                                          image: DecorationImage(
-                                            image: AssetImage(
-                                                "assets/ranks/${isSoloQueue ? blueSummonerInfo.soloRank!.tier : blueSummonerInfo.flexRank!.tier}.png"),
+                                );
+                              },
+                              child: Row(
+                                children: [
+                                  isUnrankedBlue
+                                      ? Container()
+                                      : Container(
+                                          width: 22.0,
+                                          height: 22.0,
+                                          decoration: BoxDecoration(
+                                            image: DecorationImage(
+                                              image: AssetImage(
+                                                  "assets/ranks/${isSoloQueue ? blueSummonerInfo.soloRank!.tier : blueSummonerInfo.flexRank!.tier}.png"),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                Text(
-                                  blueSummonerInfo.name.length < 20
-                                      ? blueSummonerInfo.name
-                                      : '${blueSummonerInfo.name.substring(0, 20)}...',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
+                                  Text(
+                                    blueSummonerInfo.name.length < 20
+                                        ? blueSummonerInfo.name
+                                        : '${blueSummonerInfo.name.substring(0, 20)}...',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -398,54 +403,58 @@ class LiveGamePage extends StatelessWidget {
                     ),
                     Expanded(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           SizedBox(
                             width: 5,
                           ),
-                          GestureDetector(
-                            onTap: () async {
-                              List<String> summonerNames =
-                                  await loadSummoners();
-                              bool isFavourite = false;
-                              if (summonerNames
-                                  .any((s) => s == redSummonerInfo.name)) {
-                                isFavourite = true;
-                              }
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => MatchHistoryPage(
-                                    summonerInfo: redSummonerInfo,
-                                    isFavourite: isFavourite,
+                          FittedBox(
+                            fit: BoxFit.fitWidth,
+                            child: GestureDetector(
+                              onTap: () async {
+                                List<String> summonerNames =
+                                    await loadSummoners();
+                                bool isFavourite = false;
+                                if (summonerNames
+                                    .any((s) => s == redSummonerInfo.name)) {
+                                  isFavourite = true;
+                                }
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MatchHistoryPage(
+                                      summonerInfo: redSummonerInfo,
+                                      isFavourite: isFavourite,
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text(
-                                  redSummonerInfo.name.length < 20
-                                      ? redSummonerInfo.name
-                                      : '${redSummonerInfo.name.substring(0, 20)}...',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
+                                );
+                              },
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    redSummonerInfo.name.length < 20
+                                        ? redSummonerInfo.name
+                                        : '${redSummonerInfo.name.substring(0, 20)}...',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
                                   ),
-                                ),
-                                isUnrankedRed
-                                    ? Container()
-                                    : Container(
-                                        width: 22.0,
-                                        height: 22.0,
-                                        decoration: BoxDecoration(
-                                          image: DecorationImage(
-                                            image: AssetImage(
-                                                "assets/ranks/${isSoloQueue ? redSummonerInfo.soloRank!.tier : redSummonerInfo.flexRank!.tier}.png"),
+                                  isUnrankedRed
+                                      ? Container()
+                                      : Container(
+                                          width: 22.0,
+                                          height: 22.0,
+                                          decoration: BoxDecoration(
+                                            image: DecorationImage(
+                                              image: AssetImage(
+                                                  "assets/ranks/${isSoloQueue ? redSummonerInfo.soloRank!.tier : redSummonerInfo.flexRank!.tier}.png"),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -518,69 +527,4 @@ Container _buildRune(int runeId) {
       ),
     ),
   );
-}
-
-String getWinrate(bool isSoloQueue, Summoner summonerInfo) {
-  // Calculate winrate based on the selected queue type
-  double winrate = isSoloQueue
-      ? summonerInfo.soloRank!.wins! /
-          (summonerInfo.soloRank!.wins! + summonerInfo.soloRank!.losses!)
-      : summonerInfo.flexRank!.wins! /
-          (summonerInfo.flexRank!.wins! + summonerInfo.flexRank!.losses!);
-
-  // Round the winrate to the nearest integer and convert it to a string
-  String winrateString = (winrate * 100).round().toString();
-
-  return winrateString;
-}
-
-// This function maps the queueId to the corresponding game mode name
-String getGameModeByQueueId(int queueId) {
-  final Map<int, String> gameModes = {
-    0: 'Custom',
-    400: 'Normal Draft Pick',
-    420: 'Ranked Solo/Duo',
-    430: 'Normal Blind Pick',
-    440: 'Ranked Flex',
-    450: 'ARAM',
-    700: 'Clash',
-    900: 'URF',
-    1300: 'Nexus Blitz',
-    1400: 'ARAM Snowdown',
-    2000: 'TFT',
-    2010: 'TFT Ranked',
-  };
-
-// Return the game mode name for the given queueId
-  return gameModes[queueId]!;
-}
-
-// Returns a formatted string for game duration
-String getFormattedDuration(int gameDurationInSeconds) {
-  // Convert game duration in seconds to minutes and round down
-  int minutes = (gameDurationInSeconds / 60).floor();
-
-  // Calculate remaining seconds and pad with leading zero if necessary
-  int seconds = gameDurationInSeconds % 60;
-  String formattedSeconds = seconds.toString().padLeft(2, '0');
-
-  // Combine minutes and seconds into formatted string
-  return "${minutes}m ${formattedSeconds}s";
-}
-
-String getLane(int index) {
-  switch (index) {
-    case 0:
-      return "TOP";
-    case 1:
-      return "JUNGLE";
-    case 2:
-      return "MIDDLE";
-    case 3:
-      return "BOTTOM";
-    case 4:
-      return "UTILITY";
-    default:
-      return "TOP";
-  }
 }

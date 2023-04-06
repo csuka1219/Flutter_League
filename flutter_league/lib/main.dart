@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riot_api/providers/drop_provider.dart';
-import 'package:flutter_riot_api/providers/matchhistory_provider.dart';
+import 'package:flutter_riot_api/providers/home_provider.dart';
 import 'package:flutter_riot_api/screens/home_screen.dart';
-import 'package:flutter_riot_api/screens/match_history.dart';
 import 'package:provider/provider.dart';
 
 void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => DropDownProvider()),
+        ChangeNotifierProvider(create: (_) => HomeProvider()),
       ],
       child: MyApp(),
     ),

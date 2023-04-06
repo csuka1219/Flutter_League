@@ -6,71 +6,83 @@ import 'package:flutter_riot_api/screens/match_history.dart';
 import 'package:flutter_riot_api/services/summoner_service.dart';
 import 'package:flutter_riot_api/widgets/summoner_info.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_riot_api/providers/drop_provider.dart';
 import 'package:flutter_riot_api/widgets/custom_appbar.dart';
-
 import '../utils/storage.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({Key? key}) : super(key: key);
-  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   Widget build(BuildContext context) {
+    // Retrieve the width and height of the screen
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
+
+    // Check if the HomeProvider has any summoners or if it is currently loading
+    // If either of these conditions are true, then call the initSummoners() method
+    if (context.read<HomeProvider>().summoners.isEmpty ||
+        context.read<HomeProvider>().isLoading) {
+      context.read<HomeProvider>().initSummoners();
+    }
+
+    // Build the UI using a Scaffold widget and a Stack widget
     return Scaffold(
+      // Build the app bar using the _buildAppBar() method
       appBar: _buildAppBar(context),
       body: Stack(
         children: [
+          // Add a GestureDetector widget for handling taps
           GestureDetector(
             onTap: () => {
-              context.read<DropDownProvider>().dropdownOpen
-                  ? context.read<DropDownProvider>().setFalse()
+              // Check if the dropdown menu is open
+              // If it is, close it. Otherwise, do nothing.
+              context.read<HomeProvider>().dropdownOpen
+                  ? context.read<HomeProvider>().setFalse()
                   : null
             },
             child: AnimatedOpacity(
-              duration: Duration(milliseconds: 200),
-              opacity:
-                  context.watch<DropDownProvider>().dropdownOpen ? 0.5 : 1.0,
+              // Animate the opacity of the widget
+              duration: const Duration(milliseconds: 200),
+              opacity: context.watch<HomeProvider>().dropdownOpen ? 0.5 : 1.0,
               curve: Curves.easeInOut,
               child: SingleChildScrollView(
                 child: IgnorePointer(
-                  ignoring: context.watch<DropDownProvider>().dropdownOpen,
-                  child: ChangeNotifierProvider(
-                      create: (_) => HomePageData(),
-                      child: Consumer<HomePageData>(
-                          builder: (context, homePageData, child) {
-                        if (homePageData.summoners.isEmpty ||
-                            homePageData.isLoading) {
-                          homePageData.initSummoners();
-                        }
-                        return Column(
-                          children: [
-                            SizedBox(
-                              height: 20,
+                  // Ignore pointer events if the dropdown menu is open
+                  ignoring: context.watch<HomeProvider>().dropdownOpen,
+                  child: Column(
+                    children: [
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      // Build the search bar using the _buildSearchBar() method
+                      _buildSearchBar(context, width),
+                      // If the HomeProvider is currently loading, display a progress indicator
+                      // Otherwise, display the summoner information using the _buildSummonerInfo() method
+                      context.read<HomeProvider>().isLoading == true
+                          ? const Padding(
+                              padding: EdgeInsets.only(top: 20.0),
+                              child: Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            )
+                          : Column(
+                              children: [
+                                for (Summoner? summoner
+                                    in context.read<HomeProvider>().summoners)
+                                  if (summoner != null)
+                                    _buildSummonerInfo(summoner),
+                              ],
                             ),
-                            _buildSearchBar(context, width),
-                            homePageData.isLoading == true
-                                ? Center(
-                                    child: CircularProgressIndicator(),
-                                  )
-                                : Column(
-                                    children: [
-                                      for (Summoner? summoner
-                                          in homePageData.summoners)
-                                        if (summoner != null)
-                                          _buildSummonerInfo(summoner),
-                                    ],
-                                  )
-                          ],
-                        );
-                      })),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
+          // Build the dropdown menu using the _buildDropDownMenu() method
           _buildDropDownMenu(context, height),
+          // Add an empty container to ensure the Stack fills the available space
           Container(
             height: double.infinity,
           )
@@ -79,91 +91,122 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  // This method returns a custom AppBar widget with an animated opacity.
   PreferredSize _buildAppBar(BuildContext context) {
+    // Create a PreferredSize widget with the given preferred size and child widget.
     return PreferredSize(
-      preferredSize: preferredSize,
+      preferredSize: preferredSize, // The preferred size of the widget
       child: AnimatedOpacity(
-        duration: Duration(milliseconds: 200),
-        opacity: context.watch<DropDownProvider>().dropdownOpen ? 0.5 : 1.0,
+        // Animate the opacity of the widget
+        duration: const Duration(milliseconds: 200),
+        opacity: context.watch<HomeProvider>().dropdownOpen ? 0.5 : 1.0,
         curve: Curves.easeInOut,
         child: AppBar(
-          backgroundColor: ColorPalette().primary,
-          elevation: 0,
+          // Customize the AppBar widget
+          backgroundColor: ColorPalette().primary, // Set the background color
+          elevation: 0, // Remove the elevation shadow
           title: CustomAppBar(
-            onPressed: () => context.read<DropDownProvider>().onButtonPressed(),
+            // Add a custom widget to the title section
+            onPressed: () => context.read<HomeProvider>().onButtonPressed(),
           ),
         ),
       ),
     );
   }
 
+  // This widget builds the search bar, which consists of a container with a search icon and a search field.
   Widget _buildSearchBar(BuildContext context, double width) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
+          // The width of the container is 93% of the available width.
           width: width * 0.93,
           decoration: BoxDecoration(
+            // The container has a grey border, white background, and rounded corners.
             border: Border.all(color: Colors.grey),
             color: Colors.white,
             borderRadius: BorderRadius.circular(8.0),
           ),
           child: Row(
             children: [
-              IconButton(
-                icon: Icon(Icons.search, color: ColorPalette().primary),
-                onPressed: () async {
-                  Summoner? summonerInfo = await getSummonerByName(
-                    context.read<DropDownProvider>().summomnerName,
-                  );
-                  if (summonerInfo == null) return; //TODO nem létező summoner
-                  List<String> summonerNames = await loadSummoners();
-                  bool isFavourite = false;
-                  if (summonerNames.any((s) => s == summonerInfo.name)) {
-                    isFavourite = true;
-                  }
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => MatchHistoryPage(
-                              summonerInfo: summonerInfo,
-                              isFavourite: isFavourite,
-                            )),
-                  );
-                },
-              ),
-              Expanded(
-                child: TextField(
-                  onSubmitted: (value) async {
-                    Summoner? summonerInfo = await getSummonerByName(value);
-                    if (summonerInfo == null) return; //TODO nem létező summoner
-                    List<String> summonerNames = await loadSummoners();
-                    bool isFavourite = false;
-                    if (summonerNames.any((s) => s == summonerInfo.name)) {
-                      isFavourite = true;
-                    }
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => MatchHistoryPage(
-                                summonerInfo: summonerInfo!,
-                                isFavourite: isFavourite,
-                              )),
-                    );
-                  },
-                  onChanged: (value) {
-                    context.read<DropDownProvider>().summomnerName = value;
-                  },
-                  decoration: InputDecoration(
-                    hintText: "Search Summoner",
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
+              // The search icon button is a separate widget.
+              _buildSearchIcon(context),
+              // The search field is a separate widget.
+              _buildSearchField(context),
             ],
           ),
         ),
       ],
+    );
+  }
+
+// This widget builds the search icon button, which calls the search function when pressed.
+  Widget _buildSearchIcon(BuildContext context) {
+    return IconButton(
+      // The search icon is a Material icon with a custom primary color.
+      icon: Icon(Icons.search, color: ColorPalette().primary),
+      onPressed: () async {
+        // Call the getSummonerByName function to retrieve Summoner info based on the entered name.
+        Summoner? summonerInfo = await getSummonerByName(
+          context.read<HomeProvider>().summomnerName,
+        );
+        // If the summoner info is null, do nothing and return.
+        if (summonerInfo == null) return; //TODO nem létező summoner
+        // Load the list of summoner names from local storage.
+        List<String> summonerNames = await loadSummoners();
+        // Check if the searched summoner is already a favorite.
+        bool isFavourite = summonerNames.any((s) => s == summonerInfo.name);
+        // Navigate to the match history page, passing the Summoner info and favorite status as arguments.
+        // ignore: use_build_context_synchronously
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MatchHistoryPage(
+              summonerInfo: summonerInfo,
+              isFavourite: isFavourite,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+// This widget builds the search field, which is a text field that updates the entered Summoner name in the provider when changed.
+  Widget _buildSearchField(BuildContext context) {
+    return Expanded(
+      child: TextField(
+        // When the user submits the search field, call the search function with the entered name.
+        onSubmitted: (value) async {
+          Summoner? summonerInfo = await getSummonerByName(value);
+          // If the summoner info is null, do nothing and return.
+          if (summonerInfo == null) return; //TODO nem létező summoner
+          // Load the list of summoner names from local storage.
+          List<String> summonerNames = await loadSummoners();
+          // Check if the searched summoner is already a favorite.
+          bool isFavourite = summonerNames.any((s) => s == summonerInfo.name);
+          // Navigate to the match history page, passing the Summoner info and favorite status as arguments.
+          // ignore: use_build_context_synchronously
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MatchHistoryPage(
+                summonerInfo: summonerInfo!,
+                isFavourite: isFavourite,
+              ),
+            ),
+          );
+        },
+        // When the text field is changed, update the Summoner name in the provider.
+        onChanged: (value) {
+          context.read<HomeProvider>().summomnerName = value;
+        },
+        decoration: const InputDecoration(
+          hintText: 'Summoner name',
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
+        ),
+      ),
     );
   }
 
@@ -173,15 +216,18 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  // This widget builds the dropdown menu, which is a container that animates up and down when opened and closed.
   Widget _buildDropDownMenu(BuildContext context, double height) {
     return AnimatedPositioned(
-      duration: Duration(milliseconds: 200),
-      bottom:
-          context.watch<DropDownProvider>().dropdownOpen ? 0 : -height * 0.5,
+      // The animation duration is 200 milliseconds.
+      duration: const Duration(milliseconds: 200),
+      // The bottom position of the container is either 0 or -half the height of the container, based on the dropdownOpen bool in the provider.
+      bottom: context.watch<HomeProvider>().dropdownOpen ? 0 : -height * 0.5,
       left: 0,
       right: 0,
       child: Container(
         decoration: BoxDecoration(
+          // The container has a grey shadow to create depth.
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withOpacity(0.5),
@@ -190,30 +236,40 @@ class HomeScreen extends StatelessWidget {
               offset: Offset(0, 1),
             ),
           ],
+          // The container has rounded corners on the top.
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
           ),
+          // The container has a white background color.
           color: Colors.white,
         ),
+        // The container's height is half the height of the parent container.
         height: height * 0.5,
         child: SingleChildScrollView(
           child: Column(
-            children: [_buildTitleBar(context), _buildDropdownList(context)],
+            children: [
+              // The title bar is a separate widget.
+              _buildTitleBar(context),
+              // The dropdown list is a separate widget.
+              _buildDropdownList(context),
+            ],
           ),
         ),
       ),
     );
   }
 
+  // This widget builds the title bar for the dropdown menu, which displays the title and a close icon.
   Widget _buildTitleBar(BuildContext context) {
     return Container(
       height: 60,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          // The title of the dropdown menu is displayed in the center of the row.
+          const Padding(
+            padding: EdgeInsets.all(16.0),
             child: Center(
               child: Text(
                 "Select Server",
@@ -224,51 +280,70 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
+          // The close icon button is displayed on the right side of the row.
           IconButton(
             onPressed: () {
-              context.read<DropDownProvider>().setFalse();
+              // When the close icon button is pressed, set the dropdownOpen boolean in the HomeProvider to false.
+              context.read<HomeProvider>().setFalse();
             },
-            icon: Icon(Icons.close),
+            icon: const Icon(Icons.close),
           ),
         ],
       ),
     );
   }
 
+  final List<String> options = [
+    "EUN1",
+    "EUW1",
+    "JP1",
+    "BR1",
+    "KR",
+    "LA1",
+    "LA2",
+    "NA1",
+    "OC1",
+    "PH2",
+    "RU",
+    "SG2",
+    "TH2",
+    "TR1",
+    "TW2",
+    "VN2",
+  ];
+  // A widget that displays a list of options in a dropdown menu
   Widget _buildDropdownList(BuildContext context) {
     return SizedBox(
       height: 300,
       child: ListView(
         children: [
-          _buildListItem(context, "option 1"),
-          _buildListItem(context, "option 2"),
-          _buildListItem(context, "option 3"),
-          _buildListItem(context, "option 4"),
-          _buildListItem(context, "option 4"),
-          _buildListItem(context, "option 4"),
-          _buildListItem(context, "option 4"),
-          _buildListItem(context, "option 4"),
+          // Build each option as a list item
+          for (String option in options) _buildListItem(context, option),
         ],
       ),
     );
   }
 
+// A widget that displays a single option as a list item
   Widget _buildListItem(BuildContext context, String option) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        // When the user taps on an option, set the dropdown to be closed
         onTap: () {
-          context.read<DropDownProvider>().setFalse();
+          context.read<HomeProvider>().setFalse();
         },
         child: Column(
           children: [
+            // Display the option text as the title of the list item
             ListTile(
               title: Text(
                 option,
                 textAlign: TextAlign.center,
               ),
             ),
-            Divider(
+            // Add a divider below the option
+            const Divider(
               height: 1,
             ),
           ],
