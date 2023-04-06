@@ -6,13 +6,12 @@ import 'package:flutter_riot_api/model/live_game.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
 import 'package:flutter_riot_api/providers/matchhistoryappbar_provider.dart';
 import 'package:flutter_riot_api/screens/live_match.dart';
+import 'package:flutter_riot_api/utils/sortby_role.dart';
 import 'package:flutter_riot_api/widgets/match_item.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/matchhistory_provider.dart';
 import '../utils/pulldata.dart';
-import '../utils/test2.dart';
-
 //TODO appbar jobb felső sarok kedvencemnek választás
 //TODO live game betöltés
 
@@ -224,9 +223,10 @@ class MatchHistoryPage extends StatelessWidget {
                       .read<MatchHistoryData>()
                       .fetchLiveGameData(summonerInfo.id);
                   if (liveGame == null) return;
-                  //myList.take(5).toList()
-                  getRoles(
+                  
+                  sortByRole(
                       liveGame.participants);
+
                   if (liveGame != null) {
                     Navigator.push(
                       context,

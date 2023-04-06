@@ -7,7 +7,7 @@ import 'package:flutter_riot_api/services/matchinfo_service.dart';
 import 'package:flutter_riot_api/services/summoner_service.dart';
 
 import '../utils/pulldata.dart';
-import '../utils/test.dart';
+import '../utils/roleidentification.dart';
 
 class SummonerInfo extends StatelessWidget {
   final Summoner summonerInfo;

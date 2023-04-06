@@ -1,15 +1,15 @@
 import 'package:flutter_riot_api/model/live_game.dart';
 import 'package:flutter_riot_api/utils/pulldata.dart';
-import 'package:flutter_riot_api/utils/test.dart';
+import 'package:flutter_riot_api/utils/roleidentification.dart';
 
-dynamic getRoles(List<Participant> participants) async {
+dynamic sortByRole(List<Participant> participants) async {
   Map<String, Map<String, double>> championRoles = await pullData();
 
-  List<int> roles = [];
-  roles=(getTeamRoles(participants.take(5).toList(), championRoles));
-  roles.addAll(getTeamRoles(participants.skip(5).take(5).toList(), championRoles));
-  participants.sort((a, b) => roles.indexOf(a.championId).compareTo(roles.indexOf(b.championId)));
-  return roles;
+  List<int> positions = [];
+  positions=(getTeamRoles(participants.take(5).toList(), championRoles));
+  positions.addAll(getTeamRoles(participants.skip(5).take(5).toList(), championRoles));
+  participants.sort((a, b) => positions.indexOf(a.championId).compareTo(positions.indexOf(b.championId)));
+  return positions;
 }
 
 List<int> getTeamRoles(List<Participant> participants, Map<String, Map<String, double>> championRoles) {

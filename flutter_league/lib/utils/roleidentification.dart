@@ -1,7 +1,8 @@
-import 'dart:collection';
-
+// This function calculates the highest possible playrate across all positions.
+// It takes a map of champion positions and their playrates as input.
 double highestPossiblePlayrate(
     Map<String, Map<String, double>> championPositions) {
+  // Create a map of maximum playrates for each position.
   Map<String, double> maxes = {
     "TOP": 0.0,
     "JUNGLE": 0.0,
@@ -9,18 +10,29 @@ double highestPossiblePlayrate(
     "BOTTOM": 0.0,
     "UTILITY": 0.0
   };
+
+  // Loop through each champion and their playrates for each position.
   championPositions.forEach((champion, rates) {
     rates.forEach((position, rate) {
+      // If the playrate for this champion in this position is greater than the current maximum,
+      // update the maximum for this position.
       if (rate > maxes[position]!) {
         maxes[position] = rate;
       }
     });
   });
+
+  // Calculate the average of the maximum playrates for all positions.
   return maxes.values.reduce((a, b) => a + b) / maxes.length;
 }
 
+// Calculates a metric for a given set of champions by position, based on their positions' values
 double calculateMetric(Map<String, Map<String, double>> championPositions,
     Map<String, int> championsByPosition) {
+  // For each champion in its respective position, retrieve the corresponding value
+  // If a champion doesn't have a corresponding value, use 0.0 as a default value
+  // Calculate the sum of all values
+  // Divide the sum by the number of champions in the composition to get the average metric
   return championsByPosition.entries
           .map((entry) =>
               championPositions[entry.value.toString()]![entry.key] ?? 0.0)
@@ -28,7 +40,11 @@ double calculateMetric(Map<String, Map<String, double>> championPositions,
       championsByPosition.length;
 }
 
+// Calculates the confidence level for a given set of metrics
 double calculateConfidence(double bestMetric, double secondBestMetric) {
+  // Calculate the difference between the best and second best metrics
+  // Normalize the difference based on the best metric
+  // Multiply by 100 to get the confidence level as a percentage
   double confidence = (bestMetric - secondBestMetric) / bestMetric * 100;
   return confidence;
 }
@@ -102,7 +118,7 @@ List<dynamic> getPositions(
     "UTILITY": utility ?? unknownChampions[3]
   };
 
-// Try all possible combinations of unknown champions in unknown positions
+  // Try all possible combinations of unknown champions in unknown positions
   for (var champs in permutations(unknownChampions, unknownPositions.length)) {
     for (int j = 0; j < unknownPositions.length; j++) {
       testComposition[unknownPositions[j]] = champs[j];
