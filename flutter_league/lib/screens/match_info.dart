@@ -7,48 +7,59 @@ import 'package:flutter_riot_api/model/team_header.dart';
 import 'package:flutter_riot_api/providers/matchinfo_provider.dart';
 import 'package:flutter_riot_api/screens/match_details.dart';
 import 'package:flutter_riot_api/screens/match_history.dart';
+import 'package:flutter_riot_api/utils/loldata_string.dart';
+import 'package:flutter_riot_api/widgets/rankicon.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import '../utils/storage.dart';
 
+// ignore: must_be_immutable
 class MatchInfoPage extends StatelessWidget {
   final String summonerName;
   final bool isWin;
   final String matchId;
-  const MatchInfoPage({
+  MatchInfoPage({
     Key? key,
     required this.summonerName,
     required this.isWin,
     required this.matchId,
   }) : super(key: key);
+  static final ColorPalette colorPalette = ColorPalette();
+  List<PlayerStats> playerStats = [];
 
   @override
   Widget build(BuildContext context) {
-    List<PlayerStats> playerStats = [];
+    // Initialize an empty list of player stats
+
     return Scaffold(
-      appBar: _buildAppBar(playerStats, context),
+      appBar: _buildAppBar(context),
       body: ChangeNotifierProvider(
         create: (_) => MatchInfoData(),
         child: Consumer<MatchInfoData>(
           builder: (context, matchInfoData, child) {
             if (matchInfoData.isLoading) {
+              // If the match info data is still loading, show a progress indicator
               matchInfoData.initDatas(matchId);
-              return Center(
+              // Get the player stats from the match info data
+              return const Center(
                 child: CircularProgressIndicator(),
               );
             }
+
             playerStats = matchInfoData.matchInfo!.participants;
+            // Return the main content of the screen
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Show the result of the match
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.blue,
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: Container(
-                    color: ColorPalette().primary,
+                    color: colorPalette.primary,
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -61,8 +72,8 @@ class MatchInfoPage extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 8.0),
-                        //TODO ezeket kiszervezni
+                        const SizedBox(height: 8.0),
+                        // Show the game mode and duration
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -74,48 +85,59 @@ class MatchInfoPage extends StatelessWidget {
                                 fontSize: 16.0,
                               ),
                             ),
-                            SizedBox(width: 4.0),
-                            Icon(Icons.schedule,
-                                color:
-                                    isWin ? Colors.green[400] : Colors.red[400],
-                                size: 16.0),
+                            const SizedBox(width: 4.0),
+                            Icon(
+                              Icons.schedule,
+                              color:
+                                  isWin ? Colors.green[400] : Colors.red[400],
+                              size: 16.0,
+                            ),
                           ],
                         ),
                       ],
                     ),
                   ),
                 ),
-                //SizedBox(height: 16.0),
-                SizedBox(height: 8.0),
+                const SizedBox(height: 8.0),
                 Expanded(
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Divider(
+                        // Show the winner team header and player list
+                        const Divider(
                           color: Colors.blue,
                           thickness: 1.0,
                         ),
                         _buildTeamHeader(
-                            matchInfoData.matchInfo!,
-                            "WINNER ${matchInfoData.matchInfo!.participants[0].win ? '(BLUE)' : '(RED)'}",
-                            true),
-                        SizedBox(height: 10),
-                        _buildPlayerList(matchInfoData.matchInfo!,
-                            matchInfoData.summonerInfos, true),
-                        SizedBox(height: 20),
-                        Divider(
+                          matchInfoData.matchInfo!,
+                          "WINNER ${matchInfoData.matchInfo!.participants[0].win ? '(BLUE)' : '(RED)'}",
+                          true,
+                        ),
+                        const SizedBox(height: 10),
+                        _buildPlayerList(
+                          matchInfoData.matchInfo!,
+                          matchInfoData.summonerInfos,
+                          true,
+                        ),
+                        const SizedBox(height: 20),
+                        // Show the loser team header and player list
+                        const Divider(
                           color: Colors.red,
                           thickness: 1,
                         ),
                         _buildTeamHeader(
-                            matchInfoData.matchInfo!,
-                            "LOSER ${matchInfoData.matchInfo!.participants[0].win ? '(RED)' : '(BLUE)'}",
-                            false),
-                        SizedBox(height: 10),
-                        _buildPlayerList(matchInfoData.matchInfo!,
-                            matchInfoData.summonerInfos, false),
-                        SizedBox(height: 32.0),
+                          matchInfoData.matchInfo!,
+                          "LOSER ${matchInfoData.matchInfo!.participants[0].win ? '(RED)' : '(BLUE)'}",
+                          false,
+                        ),
+                        const SizedBox(height: 10),
+                        _buildPlayerList(
+                          matchInfoData.matchInfo!,
+                          matchInfoData.summonerInfos,
+                          false,
+                        ),
+                        const SizedBox(height: 32.0),
                       ],
                     ),
                   ),
@@ -128,23 +150,30 @@ class MatchInfoPage extends StatelessWidget {
     );
   }
 
-  AppBar _buildAppBar(List<PlayerStats> playerStats, BuildContext context) {
+  AppBar _buildAppBar(BuildContext context) {
+    // Set the icon color based on whether the match was won or lost
+    IconThemeData iconTheme =
+        IconThemeData(color: isWin ? Colors.green[400] : Colors.red[400]);
+    // Return an AppBar widget
     return AppBar(
-      iconTheme:
-          IconThemeData(color: isWin ? Colors.green[400] : Colors.red[400]),
-      backgroundColor: ColorPalette().primary,
+      iconTheme: iconTheme, // Set the icon color
+      backgroundColor: colorPalette.primary, // Set the background color
       title: Text(
         "Match Info",
         style: TextStyle(color: isWin ? Colors.green[400] : Colors.red[400]),
-      ),
+      ), // Set the title of the AppBar
       actions: [
+        // Add an icon button to show the match details
         IconButton(
-          color: ColorPalette().secondary,
+          splashRadius: 20,
+          color: colorPalette.secondary, // Set the color of the button
           icon: Icon(
             Icons.bar_chart,
             color: isWin ? Colors.green[400] : Colors.red[400],
-          ),
+          ), // Set the icon to use for the button
           onPressed: () => {
+            // When the button is pressed, navigate to the MatchDetailsPage
+            // Only navigate if the playerStats list is not empty
             if (playerStats.isNotEmpty)
               {
                 Navigator.push(
@@ -163,38 +192,56 @@ class MatchInfoPage extends StatelessWidget {
     );
   }
 
+  /// A method to build a list of players in a match
   Widget _buildPlayerList(
-      Match matchInfo, List<Summoner?> summonerInfos, bool isWinner) {
-    double lineWidth = 0;
+      Match matchInfo, // Information about the match being displayed
+      List<Summoner?>
+          summonerInfos, // List of summoner information for each player
+      bool
+          isWinner // A boolean value indicating if the player's team won the match
+      ) {
+    double lineWidth = 0; // Width of the border around the champion image
+
+    // Create a sublist of the first 5 or last 5 players depending on if the team won
+    List<PlayerStats> tempList = isWinner
+        ? matchInfo.participants.sublist(0, 5)
+        : matchInfo.participants.sublist(5);
+
+    // Create a sublist of the first 5 or last 5 summoners depending on if the team won
+    List<Summoner?> tempSummonerList =
+        isWinner ? summonerInfos.sublist(0, 5) : summonerInfos.sublist(5);
+
+    // Build a ListView widget with a separator between each item
     return ListView.separated(
+      itemCount: 5,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       separatorBuilder: (BuildContext context, int index) {
         return const Divider(
           color: Colors.grey,
           thickness: 1.0,
         );
       },
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: 5,
       itemBuilder: (context, index) {
-        List<PlayerStats> tempList = isWinner
-            ? matchInfo.participants.sublist(0, 5)
-            : matchInfo.participants.sublist(5);
+        // Get the player stats for the current index
         PlayerStats playerStat = tempList[index];
+
+        // Set the border width based on whether or not the player is the user
         (playerStat.summonerName == summonerName)
             ? lineWidth = 3
             : lineWidth = 0;
 
-        List<Summoner?> tempSummonerList =
-            isWinner ? summonerInfos.sublist(0, 5) : summonerInfos.sublist(5);
-
+        // Build a gesture detector that navigates to the match history page when tapped
         return GestureDetector(
           onTap: () async {
+            // Load the summoner names from storage
             List<String> summonerNames = await loadSummoners();
-            bool isFavourite = false;
-            if (summonerNames.any((s) => s == tempSummonerList[index]!.name)) {
-              isFavourite = true;
-            }
+
+            // Check if the current summoner is marked as a favorite
+            bool isFavourite =
+                summonerNames.any((s) => s == tempSummonerList[index]!.name);
+
+            // Navigate to the match history page for the current summoner
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -206,11 +253,12 @@ class MatchInfoPage extends StatelessWidget {
             );
           },
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-            margin: EdgeInsets.only(bottom: 2),
+            margin: const EdgeInsets.only(bottom: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                // Display the champion image with a border around it
                 Container(
                   width: 40,
                   height: 40,
@@ -226,41 +274,42 @@ class MatchInfoPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Display the summoner name and rank
                       FittedBox(
                         fit: BoxFit.fitWidth,
                         child: Row(
                           children: [
                             Text(
-                              "${playerStat.summonerName}",
-                              style: TextStyle(
+                              playerStat.summonerName,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12,
                               ),
                             ),
-                            SizedBox(width: 4),
+                            const SizedBox(width: 4),
                             Row(
                               children: [
                                 RankIcon(
                                   summonerInfo: tempSummonerList[index]!,
                                   queueId: matchInfo.queueId,
                                 ),
-                                SizedBox(width: 2),
+                                const SizedBox(width: 2),
                                 Text(
-                                  //TODO
                                   getRank(matchInfo, tempSummonerList[index]!),
-                                  style: TextStyle(fontSize: 8),
+                                  style: const TextStyle(fontSize: 8),
                                 ),
                               ],
                             ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 5),
+                      const SizedBox(height: 5),
+                      //display spells and runes
                       Row(
                         children: [
                           _buildSummonerSpell(playerStat.summoner1Id),
@@ -279,11 +328,12 @@ class MatchInfoPage extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
+                    //display kda and cs/min
                     Row(
                       children: [
                         Text(
                           "${playerStat.totalCS} CS(${getCsPerMinute(matchInfo, playerStat)})",
-                          style: TextStyle(fontSize: 9),
+                          style: const TextStyle(fontSize: 9),
                         ),
                         const SizedBox(width: 5),
                         _buildKDAText("${playerStat.kills} / ", Colors.black),
@@ -292,6 +342,7 @@ class MatchInfoPage extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 5),
+                    //display items
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -350,7 +401,7 @@ class MatchInfoPage extends StatelessWidget {
       height: 16,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: ColorPalette().primary,
+        color: colorPalette.primary,
         image: DecorationImage(
           image: AssetImage("assets/runes/$runeId.png"),
         ),
@@ -358,18 +409,23 @@ class MatchInfoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTeamHeader(Match matchInfo, String teamName, bool isWinnerTeam) {
-    late TeamHeader teamHeader;
-    if (isWinnerTeam) {
-      teamHeader = TeamHeader(
-          matchInfo.participants.sublist(0, matchInfo.participants.length ~/ 2),
-          matchInfo.teams[0]);
-    } else {
-      teamHeader = TeamHeader(
-          matchInfo.participants.sublist(matchInfo.participants.length ~/ 2),
-          matchInfo.teams[1]);
-    }
-    Color teamColor = isWinnerTeam ? Colors.blue : Colors.red;
+  /// Returns a [Container] widget that displays the team's name, statistics and KDA.
+  Container _buildTeamHeader(
+      Match matchInfo, String teamName, bool isWinnerTeam) {
+    // Determine which team header to use based on whether the team is the winner or not.
+    final teamHeader = isWinnerTeam
+        ? TeamHeader(
+            matchInfo.participants
+                .sublist(0, matchInfo.participants.length ~/ 2),
+            matchInfo.teams[0])
+        : TeamHeader(
+            matchInfo.participants.sublist(matchInfo.participants.length ~/ 2),
+            matchInfo.teams[1]);
+
+    // Determine the team color based on whether the team is the winner or not.
+    final teamColor = isWinnerTeam ? Colors.blue : Colors.red;
+
+    // Build the container widget that displays the team information.
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8.0),
@@ -378,6 +434,7 @@ class MatchInfoPage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
+            // Display the team's name.
             Text(
               teamName,
               style: TextStyle(
@@ -386,64 +443,54 @@ class MatchInfoPage extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 8.0, width: 10),
-            //TODO icon kék
+            const SizedBox(height: 8.0, width: 10),
+            // Display the team's statistics.
             _buildStatIconAndText(
-              'https://s-lol-web.op.gg/images/icon/icon-tower.svg?v=1678413225229',
-              '${teamHeader.turrets}',
-            ),
-            SizedBox(width: 8.0),
+                'turret.svg', '${teamHeader.turrets}', teamColor),
+            const SizedBox(width: 8.0),
             _buildStatIconAndText(
-              'https://s-lol-web.op.gg/images/icon/icon-dragon.svg?v=1678413225229',
-              '${teamHeader.dragons}',
-            ),
-            SizedBox(width: 8.0),
+                'drake.svg', '${teamHeader.dragons}', teamColor),
+            const SizedBox(width: 8.0),
             _buildStatIconAndText(
-              'https://s-lol-web.op.gg/images/icon/icon-baron.svg?v=1678413225229',
-              '${teamHeader.barons}',
-            ),
-            Spacer(),
-            Text(
-              '${teamHeader.kills} / ',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              '${teamHeader.deaths}',
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              ' / ${teamHeader.assists}',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+                'baron.svg', '${teamHeader.barons}', teamColor),
+            const Spacer(),
+            // Display the team's KDA.
+            _buildTeamKda("${teamHeader.kills} /", Colors.black),
+            _buildTeamKda(" ${teamHeader.assists}", Colors.red),
+            _buildTeamKda(" / ${teamHeader.kills}", Colors.black),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatIconAndText(String iconUrl, String text) {
+  /// Builds a Text widget with the given text and color
+  Text _buildTeamKda(String text, Color color) {
+    return Text(
+      text,
+      style: TextStyle(
+        color: color,
+        fontSize: 16.0,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  /// Builds a Row widget with an icon, text, and color
+  Row _buildStatIconAndText(String iconName, String text, Color color) {
     return Row(
       children: [
-        SvgPicture.network(
-          iconUrl,
+        // Adds an SVG icon to the Row with the given color filter
+        SvgPicture.asset(
+          "assets/objects/$iconName",
           height: 16,
           width: 16,
+          colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
         ),
+        // Adds text to the Row with a font size of 12 and black color
         Text(
           ' $text',
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.black,
             fontSize: 12.0,
           ),
@@ -452,185 +499,33 @@ class MatchInfoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildItemsRow(int item) {
-    return item != 0
-        ? Container(
-            width: 20.0,
-            height: 20.0,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              image: DecorationImage(
-                image: AssetImage("assets/items/${item}.png"),
-              ),
-            ),
-          )
-        : Container(
-            width: 20.0,
-            height: 20.0,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: ColorPalette().primary),
-          );
-  }
-
-  Widget _buildDamageDealtBar(int damageDealt, int maxDamageDealt) {
-    final double barWidth = 100;
-    final double barHeight = 10;
-    final double barValue = damageDealt.toDouble() / maxDamageDealt.toDouble();
-    final double filledWidth = barWidth * barValue;
-
-    return Container(
-      height: barHeight,
-      width: barWidth,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade300,
-        borderRadius: BorderRadius.circular(barHeight),
-      ),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Container(
-          height: barHeight,
-          width: filledWidth,
-          decoration: BoxDecoration(
-            color: Colors.blue,
-            borderRadius: BorderRadius.circular(barHeight),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDamageDealtBar2(int damageDealt, int maxDamageDealt) {
-    final double barWidth = 10;
-    final double barHeight = 40;
-    final double barValue = damageDealt.toDouble() / maxDamageDealt.toDouble();
-    final double filledWidth = barHeight * barValue;
-
-    return Container(
-      height: barHeight,
-      width: barWidth,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade300,
-        borderRadius: BorderRadius.circular(barHeight),
-      ),
-      child: Align(
-        alignment: Alignment.bottomCenter,
-        child: Container(
-          height: filledWidth,
-          width: barWidth,
-          decoration: BoxDecoration(
-            color: Colors.blue,
-            borderRadius: BorderRadius.circular(barHeight),
-          ),
-        ),
-      ),
-    );
-  }
-
-  String getFormattedDuration(int gameDurationInSeconds) {
-    return "${(gameDurationInSeconds / 60).floor()}m ${(gameDurationInSeconds % 60).toString().padLeft(2, '0')}s";
-  }
-
-  String getGameModeByQueueId(int queueId) {
-    final Map<int, String> gameModes = {
-      0: 'Custom',
-      400: 'Normal Draft Pick',
-      420: 'Ranked Solo/Duo',
-      430: 'Normal Blind Pick',
-      440: 'Ranked Flex',
-      450: 'ARAM',
-      700: 'Clash',
-      900: 'URF',
-      1300: 'Nexus Blitz',
-      1400: 'ARAM Snowdown',
-      2000: 'TFT',
-      2010: 'TFT Ranked',
-    };
-    return gameModes[queueId]!;
-  }
-
-  String getCsPerMinute(Match matchInfo, PlayerStats playerStat) {
-    double gameDurationInMinutes = matchInfo.gameDuration / 60;
-    double csPerMinute = playerStat.totalCS / gameDurationInMinutes;
-    return csPerMinute.toStringAsFixed(1);
-  }
-
-  String getRank(Match matchInfo, Summoner summonerInfo) {
-    if (matchInfo.queueId == 420) {
-      return summonerInfo.soloRank != null
-          ? "${summonerInfo.soloRank!.tier!} ${summonerInfo.soloRank!.rank!}"
-          : "Level ${summonerInfo.summonerLevel}";
-    } else if (matchInfo.queueId == 440) {
-      return summonerInfo.flexRank != null
-          ? "${summonerInfo.flexRank!.tier!} ${summonerInfo.flexRank!.rank!}"
-          : "Level ${summonerInfo.summonerLevel}";
-    }
-    if (summonerInfo.soloRank != null) {
-      return "${summonerInfo.soloRank!.tier!} ${summonerInfo.soloRank!.rank!}";
-    } else if (summonerInfo.flexRank != null) {
-      return "${summonerInfo.flexRank!.tier!} ${summonerInfo.flexRank!.rank!}";
-    }
-    return "Level ${summonerInfo.summonerLevel}";
-  }
-}
-
-class RankIcon extends StatelessWidget {
-  final Summoner summonerInfo;
-  final int queueId;
-  const RankIcon({Key? key, required this.summonerInfo, required this.queueId})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    if (queueId == 420 && summonerInfo.soloRank != null) {
+  /// This function takes an integer item number as input and returns a widget
+  Container _buildItemsRow(int item) {
+    // Check if item is not equal to zero
+    if (item != 0) {
+      // If the item number is not zero, create a Container widget with an image decoration
       return Container(
         width: 20.0,
         height: 20.0,
         decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
           image: DecorationImage(
-            image:
-                AssetImage("assets/ranks/${summonerInfo.soloRank!.tier!}.png"),
+            // The image source is determined by the item number
+            image: AssetImage("assets/items/$item.png"),
           ),
         ),
       );
-    } else if (queueId == 440 && summonerInfo.flexRank != null) {
+    } else {
+      // If the item number is zero, create a Container widget with a solid background color
       return Container(
         width: 20.0,
         height: 20.0,
         decoration: BoxDecoration(
-          image: DecorationImage(
-            image:
-                AssetImage("assets/ranks/${summonerInfo.flexRank!.tier!}.png"),
-          ),
+          borderRadius: BorderRadius.circular(8),
+          color: colorPalette
+              .primary, // Use the primary color defined in the colorPalette
         ),
       );
     }
-    if (summonerInfo.soloRank != null) {
-      return Container(
-        width: 20.0,
-        height: 20.0,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image:
-                AssetImage("assets/ranks/${summonerInfo.soloRank!.tier!}.png"),
-          ),
-        ),
-      );
-    } else if (summonerInfo.flexRank != null) {
-      return Container(
-        width: 20.0,
-        height: 20.0,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image:
-                AssetImage("assets/ranks/${summonerInfo.flexRank!.tier!}.png"),
-          ),
-        ),
-      );
-    }
-    return Container(
-      width: 0.0,
-      height: 0.0,
-    );
   }
 }

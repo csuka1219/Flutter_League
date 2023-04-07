@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
-import 'package:flutter_riot_api/model/live_game.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
 import 'package:flutter_riot_api/providers/home_provider.dart';
 import 'package:flutter_riot_api/providers/matchhistoryappbar_provider.dart';
@@ -327,8 +324,8 @@ class MatchHistoryPage extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16.0),
                   ),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 6.0),
                 ),
                 child: const Text(
                   'LIVE',

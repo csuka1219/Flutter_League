@@ -192,7 +192,7 @@ class HomeScreen extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) => MatchHistoryPage(
-                summonerInfo: summonerInfo!,
+                summonerInfo: summonerInfo,
                 isFavourite: isFavourite,
               ),
             ),
@@ -234,7 +234,7 @@ class HomeScreen extends StatelessWidget {
               color: Colors.grey.withOpacity(0.5),
               spreadRadius: 1,
               blurRadius: 10,
-              offset: Offset(0, 1),
+              offset: const Offset(0, 1),
             ),
           ],
           // The container has rounded corners on the top.

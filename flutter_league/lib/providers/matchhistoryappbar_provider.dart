@@ -1,9 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../utils/storage.dart';
 
 class MatchHistoryAppBarIcon with ChangeNotifier {

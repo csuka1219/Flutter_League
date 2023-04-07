@@ -1,4 +1,6 @@
+import 'package:flutter_riot_api/model/playerstats.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
+import 'package:flutter_riot_api/model/match.dart';
 
 /// Returns a formatted string representing the winrate of the summoner in
 /// either solo queue or flex queue.
@@ -73,4 +75,28 @@ String getLane(int index) {
     default:
       return "TOP";
   }
+}
+
+String getCsPerMinute(Match matchInfo, PlayerStats playerStat) {
+  double gameDurationInMinutes = matchInfo.gameDuration / 60;
+  double csPerMinute = playerStat.totalCS / gameDurationInMinutes;
+  return csPerMinute.toStringAsFixed(1);
+}
+
+String getRank(Match matchInfo, Summoner summonerInfo) {
+  if (matchInfo.queueId == 420) {
+    return summonerInfo.soloRank != null
+        ? "${summonerInfo.soloRank!.tier!} ${summonerInfo.soloRank!.rank!}"
+        : "Level ${summonerInfo.summonerLevel}";
+  } else if (matchInfo.queueId == 440) {
+    return summonerInfo.flexRank != null
+        ? "${summonerInfo.flexRank!.tier!} ${summonerInfo.flexRank!.rank!}"
+        : "Level ${summonerInfo.summonerLevel}";
+  }
+  if (summonerInfo.soloRank != null) {
+    return "${summonerInfo.soloRank!.tier!} ${summonerInfo.soloRank!.rank!}";
+  } else if (summonerInfo.flexRank != null) {
+    return "${summonerInfo.flexRank!.tier!} ${summonerInfo.flexRank!.rank!}";
+  }
+  return "Level ${summonerInfo.summonerLevel}";
 }
