@@ -12,6 +12,7 @@ import '../utils/storage.dart';
 class HomeScreen extends StatelessWidget {
   HomeScreen({Key? key}) : super(key: key);
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  static final ColorPalette colorPalette = ColorPalette();
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +92,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // This method returns a custom AppBar widget with an animated opacity.
+  /// This method returns a custom AppBar widget with an animated opacity.
   PreferredSize _buildAppBar(BuildContext context) {
     // Create a PreferredSize widget with the given preferred size and child widget.
     return PreferredSize(
@@ -103,7 +104,7 @@ class HomeScreen extends StatelessWidget {
         curve: Curves.easeInOut,
         child: AppBar(
           // Customize the AppBar widget
-          backgroundColor: ColorPalette().primary, // Set the background color
+          backgroundColor: colorPalette.primary, // Set the background color
           elevation: 0, // Remove the elevation shadow
           title: CustomAppBar(
             // Add a custom widget to the title section
@@ -114,8 +115,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // This widget builds the search bar, which consists of a container with a search icon and a search field.
-  Widget _buildSearchBar(BuildContext context, double width) {
+  /// This widget builds the search bar, which consists of a container with a search icon and a search field.
+  Row _buildSearchBar(BuildContext context, double width) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -141,11 +142,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-// This widget builds the search icon button, which calls the search function when pressed.
-  Widget _buildSearchIcon(BuildContext context) {
+  /// This widget builds the search icon button, which calls the search function when pressed.
+  IconButton _buildSearchIcon(BuildContext context) {
     return IconButton(
       // The search icon is a Material icon with a custom primary color.
-      icon: Icon(Icons.search, color: ColorPalette().primary),
+      icon: Icon(Icons.search, color: colorPalette.primary),
       onPressed: () async {
         // Call the getSummonerByName function to retrieve Summoner info based on the entered name.
         Summoner? summonerInfo = await getSummonerByName(
@@ -172,8 +173,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-// This widget builds the search field, which is a text field that updates the entered Summoner name in the provider when changed.
-  Widget _buildSearchField(BuildContext context) {
+  /// This widget builds the search field, which is a text field that updates the entered Summoner name in the provider when changed.
+  Expanded _buildSearchField(BuildContext context) {
     return Expanded(
       child: TextField(
         // When the user submits the search field, call the search function with the entered name.
@@ -210,14 +211,14 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSummonerInfo(Summoner summoner) {
+  SummonerInfo _buildSummonerInfo(Summoner summoner) {
     return SummonerInfo(
       summonerInfo: summoner,
     );
   }
 
-  // This widget builds the dropdown menu, which is a container that animates up and down when opened and closed.
-  Widget _buildDropDownMenu(BuildContext context, double height) {
+  /// This widget builds the dropdown menu, which is a container that animates up and down when opened and closed.
+  AnimatedPositioned _buildDropDownMenu(BuildContext context, double height) {
     return AnimatedPositioned(
       // The animation duration is 200 milliseconds.
       duration: const Duration(milliseconds: 200),
@@ -237,7 +238,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
           // The container has rounded corners on the top.
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
           ),
@@ -260,9 +261,9 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // This widget builds the title bar for the dropdown menu, which displays the title and a close icon.
-  Widget _buildTitleBar(BuildContext context) {
-    return Container(
+  /// This widget builds the title bar for the dropdown menu, which displays the title and a close icon.
+  SizedBox _buildTitleBar(BuildContext context) {
+    return SizedBox(
       height: 60,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -311,8 +312,9 @@ class HomeScreen extends StatelessWidget {
     "TW2",
     "VN2",
   ];
-  // A widget that displays a list of options in a dropdown menu
-  Widget _buildDropdownList(BuildContext context) {
+
+  /// A widget that displays a list of options in a dropdown menu
+  SizedBox _buildDropdownList(BuildContext context) {
     return SizedBox(
       height: 300,
       child: ListView(
@@ -324,8 +326,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-// A widget that displays a single option as a list item
-  Widget _buildListItem(BuildContext context, String option) {
+  /// A widget that displays a single option as a list item
+  Material _buildListItem(BuildContext context, String option) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
