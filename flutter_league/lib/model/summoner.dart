@@ -54,6 +54,41 @@ class Summoner {
       'flexRank': flexRank?.toJson(),
     };
   }
+
+  bool areSummonersEqual(Summoner? other) {
+    if (other == null) {
+      // The other summoner is null, so they are considered different
+      return false;
+    } else {
+      // Compare the fields of both summoners
+      return id == other.id &&
+          accountId == other.accountId &&
+          puuid == other.puuid &&
+          name == other.name &&
+          profileIconId == other.profileIconId &&
+          revisionDate == other.revisionDate &&
+          summonerLevel == other.summonerLevel &&
+          areRanksEqual(soloRank, other.soloRank) &&
+          areRanksEqual(flexRank, other.flexRank);
+    }
+  }
+
+  bool areRanksEqual(Rank? rank1, Rank? rank2) {
+    if (rank1 == null && rank2 == null) {
+      // Both ranks are null, so they are considered equal
+      return true;
+    } else if (rank1 == null || rank2 == null) {
+      // One rank is null and the other is not, so they are considered different
+      return false;
+    } else {
+      // Both ranks are not null, so compare their fields
+      return rank1.tier == rank2.tier &&
+          rank1.rank == rank2.rank &&
+          rank1.leaguePoints == rank2.leaguePoints &&
+          rank1.wins == rank2.wins &&
+          rank1.losses == rank2.losses;
+    }
+  }
 }
 
 class Rank {

@@ -10,6 +10,11 @@ class HomeProvider with ChangeNotifier {
 
   bool get isLoading => _isLoading;
 
+  set isLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
   void addSummoner(Summoner summoner) {
     summoners.add(summoner);
     notifyListeners();
@@ -17,11 +22,6 @@ class HomeProvider with ChangeNotifier {
 
   void removeSummoner(Summoner summoner) {
     summoners.removeWhere(((element) => element!.id == summoner.id));
-    notifyListeners();
-  }
-
-  set isLoading(bool value) {
-    _isLoading = value;
     notifyListeners();
   }
 

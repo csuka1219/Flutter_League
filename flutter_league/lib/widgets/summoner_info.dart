@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
+import 'package:flutter_riot_api/providers/home_provider.dart';
+import 'package:flutter_riot_api/providers/summonerinfobox_provider.dart';
 import 'package:flutter_riot_api/screens/match_history.dart';
-import 'package:flutter_riot_api/screens/live_match.dart';
-import 'package:flutter_riot_api/services/matchinfo_service.dart';
-import 'package:flutter_riot_api/services/summoner_service.dart';
 import 'package:flutter_riot_api/utils/loldata_string.dart';
-
-import '../services/pulldata.dart';
-import '../utils/roleidentification.dart';
+import 'package:provider/provider.dart';
 
 class SummonerInfo extends StatelessWidget {
   final Summoner summonerInfo;
@@ -17,89 +14,123 @@ class SummonerInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Determine if solo queue rank should be shown or not
-    bool showSoloQueue = summonerInfo.soloRank != null ||
-        (summonerInfo.soloRank == null && summonerInfo.flexRank == null);
-
-    // Determine if the summoner is unranked
-    bool unranked = (showSoloQueue && summonerInfo.soloRank == null) ||
-        (!showSoloQueue && summonerInfo.flexRank == null);
 
     // Get the screen width
     double width = MediaQuery.of(context).size.width;
 
-    return Container(
-      margin: const EdgeInsets.only(top: 25, left: 20, right: 20, bottom: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.03),
-            spreadRadius: 10,
-            blurRadius: 3,
-            // changes position of shadow
-          ),
-        ],
-      ),
-      child: Padding(
-        padding:
-            const EdgeInsets.only(top: 20, bottom: 25, right: 20, left: 20),
-        child: InkWell(
-          onTap: () async {
-            // Navigate to the match history page
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MatchHistoryPage(
-                  summonerInfo: summonerInfo,
-                  isFavourite: true,
-                ),
+    return ChangeNotifierProvider(
+      create: (_) => SummonerInfoData(summonerInfo),
+      child: Consumer<SummonerInfoData>(
+        builder: (sContext, summonerInfoData, child) {
+          bool showSoloQueue = summonerInfoData.summoner.soloRank != null ||
+              (summonerInfoData.summoner.soloRank == null &&
+                  summonerInfoData.summoner.flexRank == null);
+
+          // Determine if the summoner is unranked
+          bool unranked = (showSoloQueue &&
+                  summonerInfoData.summoner.soloRank == null) ||
+              (!showSoloQueue && summonerInfoData.summoner.flexRank == null);
+          if (summonerInfoData.isLoading) {
+            return Container(
+              height: 335,
+              margin: const EdgeInsets.only(
+                  top: 25, left: 20, right: 20, bottom: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.03),
+                    spreadRadius: 10,
+                    blurRadius: 3,
+                    // changes position of shadow
+                  ),
+                ],
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(),
               ),
             );
-          },
-          child: Column(
-            children: [
-              // Display the refresh and delete icons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildBoxIcon(Icons.refresh_outlined), //TODO
-                  _buildBoxIcon(Icons.delete), //TODO
-                ],
+          }
+          return Container(
+            margin:
+                const EdgeInsets.only(top: 25, left: 20, right: 20, bottom: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(25),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.03),
+                  spreadRadius: 10,
+                  blurRadius: 3,
+                  // changes position of shadow
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.only(
+                  top: 20, bottom: 25, right: 20, left: 20),
+              child: InkWell(
+                onTap: () async {
+                  // Navigate to the match history page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MatchHistoryPage(
+                        summonerInfo: summonerInfoData.summoner,
+                        isFavourite: true,
+                      ),
+                    ),
+                  );
+                },
+                child: Column(
+                  children: [
+                    // Display the refresh and delete icons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildBoxIcon(
+                            Icons.refresh_outlined, true, summonerInfoData),
+                        _buildBoxIcon(
+                            Icons.delete, false, summonerInfoData, context),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    Column(
+                      children: [
+                        // Display the summoner's icon
+                        _buildsummonerIcon(summonerInfoData.summoner),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        // Display the summoner's base information
+                        _buildSummonerBaseInfo(
+                          width,
+                          summonerInfoData.summoner,
+                          showSoloQueue,
+                          unranked,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    // Display the summoner's ranked stats
+                    _buildRankedStats(summonerInfoData.summoner, showSoloQueue),
+                  ],
+                ),
               ),
-              const SizedBox(
-                height: 15,
-              ),
-              Column(
-                children: [
-                  // Display the summoner's icon
-                  _buildsummonerIcon(summonerInfo),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  // Display the summoner's base information
-                  _buildSummonerBaseInfo(
-                    width,
-                    summonerInfo,
-                    showSoloQueue,
-                    unranked,
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              // Display the summoner's ranked stats
-              _buildRankedStats(summonerInfo, showSoloQueue),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  // This widget builds the summoner icon and level badge
-  Widget _buildsummonerIcon(Summoner summonerInfo) {
+  /// This widget builds the summoner icon and level badge
+  Stack _buildsummonerIcon(Summoner summonerInfo) {
     return Stack(
       children: [
         // The container is a circular shape and contains the summoner icon image
@@ -110,6 +141,7 @@ class SummonerInfo extends StatelessWidget {
               shape: BoxShape.circle,
               image: DecorationImage(
                   // This line of code sets the URL for the summoner icon image
+                  //TODO get latest patch
                   image: NetworkImage(
                       "https://ddragon.leagueoflegends.com/cdn/13.7.1/img/profileicon/${summonerInfo.profileIconId}.png"),
                   fit: BoxFit.cover)),
@@ -141,7 +173,7 @@ class SummonerInfo extends StatelessWidget {
     );
   }
 
-  Widget _buildSummonerBaseInfo(
+  SizedBox _buildSummonerBaseInfo(
       double width, Summoner summonerInfo, bool showSoloQueue, bool unranked) {
     // define the width of the widget as 60% of the available width
     double widgetWidth = (width - 40) * 0.6;
@@ -182,10 +214,10 @@ class SummonerInfo extends StatelessWidget {
     return unranked
         ? Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+            children: const [
               Text(
                 "Unranked",
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: Colors.black),
@@ -217,7 +249,7 @@ class SummonerInfo extends StatelessWidget {
           );
   }
 
-  Widget _buildRankedStats(Summoner summonerInfo, bool showSoloQueue) {
+  Row _buildRankedStats(Summoner summonerInfo, bool showSoloQueue) {
     // Initialize the win rate to "-" and get the appropriate rank based on the queue type
     String winRate = "-";
     Rank? rank = showSoloQueue ? summonerInfo.soloRank : summonerInfo.flexRank;
@@ -234,21 +266,9 @@ class SummonerInfo extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          "${rank.wins}W",
-          style: const TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green),
-        ),
-        const Text(
-          "/",
-          style: TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
-        ),
-        Text(
-          "${rank.losses}L",
-          style: const TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w600, color: Colors.red),
-        ),
+        _buildWinLoseText("${rank.wins}W", Colors.green),
+        _buildWinLoseText("/", Colors.black),
+        _buildWinLoseText("${rank.losses}L", Colors.red),
         const SizedBox(
           width: 10,
         ),
@@ -262,43 +282,63 @@ class SummonerInfo extends StatelessWidget {
         ),
         Column(
           children: [
-            Row(
-              children: [
-                const Text(
-                  "Winrate ",
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black),
-                ),
-                Text(
-                  "$winRate%",
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      // Set the color of the win rate based on whether it's above or below 50%
-                      color: winRate != "-"
-                          ? (int.parse(winRate) >= 50)
-                              ? Colors.green
-                              : Colors.red
-                          : Colors.black),
-                ),
-              ],
-            ),
+            _buildWinrateText(winRate),
           ],
         ),
       ],
     );
   }
 
+  Text _buildWinLoseText(String text, Color color) {
+    return Text(
+      text,
+      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: color),
+    );
+  }
+
+  Row _buildWinrateText(String winRate) {
+    return Row(
+      children: [
+        const Text(
+          "Winrate ",
+          style: TextStyle(
+              fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
+        ),
+        Text(
+          "$winRate%",
+          style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              // Set the color of the win rate based on whether it's above or below 50%
+              color: winRate != "-"
+                  ? (int.parse(winRate) >= 50)
+                      ? Colors.green
+                      : Colors.red
+                  : Colors.black),
+        ),
+      ],
+    );
+  }
+
   /// Returns a circular material widget with an icon inside it.
-  Widget _buildBoxIcon(IconData icon) {
+  Material _buildBoxIcon(
+      IconData icon, bool isRefresh, SummonerInfoData summonerInfoData,
+      [BuildContext? context]) {
     return Material(
       shape: const CircleBorder(),
       clipBehavior: Clip.hardEdge,
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => {},
+        onTap: () => {
+          isRefresh
+              ? summonerInfoData.updateSummoner()
+              : {
+                  summonerInfoData.deleteSummoner(summonerInfoData.summoner),
+                  context!
+                      .read<HomeProvider>()
+                      .removeSummoner(summonerInfoData.summoner)
+                }
+        },
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Icon(icon, color: ColorPalette().primary),
