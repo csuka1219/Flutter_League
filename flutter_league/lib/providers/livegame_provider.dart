@@ -17,10 +17,11 @@ class LiveGameData with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> initDatas(List<Participant> participants) async {
+  Future<void> initDatas(List<Participant> participants,
+      [String? serverId]) async {
     _isLoading = true;
     for (var item in participants) {
-      _summonerInfos.add(await getSummonerByName(item.summonerName));
+      _summonerInfos.add(await getSummonerByName(item.summonerName, serverId));
     }
     isLoading = false;
   }

@@ -100,3 +100,45 @@ String getRank(Match matchInfo, Summoner summonerInfo) {
   }
   return "Level ${summonerInfo.summonerLevel}";
 }
+
+String getRegionFromServerId(String serverId) {
+  if (serverId.startsWith("na") ||
+      serverId.startsWith("br") ||
+      serverId.startsWith("lan") ||
+      serverId.startsWith("las") ||
+      serverId.startsWith("oce")) {
+    return "Americas";
+  } else if (serverId.startsWith("eun") ||
+      serverId.startsWith("euw") ||
+      serverId.startsWith("tr") ||
+      serverId.startsWith("ru")) {
+    return "Europe";
+  } else if (serverId.startsWith("jp") || serverId.startsWith("kr")) {
+    return "Asia";
+  } else if (serverId.startsWith("th") ||
+      serverId.startsWith("vn") ||
+      serverId.startsWith("sg") ||
+      serverId.startsWith("ph") ||
+      serverId.startsWith("id")) {
+    return "SEA";
+  }
+  return "Unknown";
+}
+
+String getServerName(String serverId) {
+  return serverNames[serverId]!;
+}
+
+Map<String, String> serverNames = {
+  'br1': 'BR',
+  'eun1': 'EUNE',
+  'euw1': 'EUW',
+  'jp1': 'JP',
+  'kr': 'KR',
+  'la1': 'LAN',
+  'la2': 'LAS',
+  'na1': 'NA',
+  'oc1': 'OCE',
+  'tr1': 'TR',
+  'ru': 'RU',
+};

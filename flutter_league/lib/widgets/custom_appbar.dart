@@ -1,6 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
+import 'package:flutter_riot_api/providers/customappbar_provider.dart';
+import 'package:flutter_riot_api/providers/home_provider.dart';
+import 'package:provider/provider.dart';
 
 class CustomAppBar extends StatelessWidget {
   final Function onPressed;
@@ -16,7 +19,7 @@ class CustomAppBar extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              'JánosBook',
+              'FlutterLeage',
               style: TextStyle(
                 color: ColorPalette().secondary,
                 fontSize: 32.0,
@@ -45,11 +48,25 @@ class CustomAppBar extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          "EUNE",
-                          style: TextStyle(
-                              fontSize: 15,
-                              color: Color.fromARGB(255, 44, 62, 80)),
+                        Consumer<HomeProvider>(
+                          // Consume the MatchHistoryData from the widget tree
+                          builder: (context, customAppBarData, child) {
+                            if (customAppBarData.serverName == null) {
+                              return Text(
+                                "-",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Color.fromARGB(255, 44, 62, 80),
+                                ),
+                              );
+                            }
+                            return Text(
+                              customAppBarData.serverName!,
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  color: Color.fromARGB(255, 44, 62, 80)),
+                            );
+                          },
                         ),
                         Spacer(),
                         Transform.rotate(

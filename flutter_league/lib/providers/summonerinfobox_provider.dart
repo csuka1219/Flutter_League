@@ -4,10 +4,6 @@ import 'package:flutter_riot_api/services/summoner_service.dart';
 import 'package:flutter_riot_api/utils/storage.dart';
 
 class SummonerInfoData with ChangeNotifier {
-  SummonerInfoData(Summoner kSummoner) {
-    summoner = kSummoner;
-  }
-
   bool _isLoading = false;
 
   bool get isLoading => _isLoading;
@@ -17,12 +13,12 @@ class SummonerInfoData with ChangeNotifier {
     notifyListeners();
   }
 
-  late Summoner summoner;
+  Summoner? summoner;
 
-  Future<void> updateSummoner() async {
+  Future<void> updateSummoner([String? serverId]) async {
     isLoading = true;
-    Summoner? sum = await getSummonerByName(summoner.name);
-    bool needUpdate = summoner.areSummonersEqual(sum);
+    Summoner? sum = await getSummonerByName(summoner!.name, serverId);
+    bool needUpdate = summoner!.areSummonersEqual(sum);
     if (needUpdate) {
       summoner = sum!;
     }
@@ -31,5 +27,9 @@ class SummonerInfoData with ChangeNotifier {
 
   void deleteSummoner(Summoner summoner) async {
     await deleteSummonerPref(summoner.name);
+  }
+
+  void init(Summoner summoner) {
+    this.summoner = summoner;
   }
 }

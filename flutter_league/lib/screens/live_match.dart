@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
 import 'package:flutter_riot_api/model/live_game.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
+import 'package:flutter_riot_api/model/summoner_server.dart';
 import 'package:flutter_riot_api/providers/livegame_provider.dart';
 import 'package:flutter_riot_api/screens/match_history.dart';
 import 'package:flutter_riot_api/utils/getchampionname.dart';
@@ -12,7 +13,8 @@ import '../utils/storage.dart';
 
 class LiveGamePage extends StatelessWidget {
   final LiveGame liveGameData;
-  const LiveGamePage({super.key, required this.liveGameData});
+  final String? serverId;
+  const LiveGamePage({super.key, required this.liveGameData, this.serverId});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +36,7 @@ class LiveGamePage extends StatelessWidget {
           builder: (context, liveGameSummoners, child) {
             if (liveGameSummoners.summonerInfos.isEmpty) {
               // If the match history is empty, fetch data and show loading indicator
-              liveGameSummoners.initDatas(liveGameData.participants);
+              liveGameSummoners.initDatas(liveGameData.participants, serverId);
               return Center(
                 child: CircularProgressIndicator(),
               );
@@ -340,19 +342,21 @@ class LiveGamePage extends StatelessWidget {
                             fit: BoxFit.fitWidth,
                             child: GestureDetector(
                               onTap: () async {
-                                List<String> summonersNames =
+                                List<SummonerServer> summonerServers =
                                     await loadSummoners();
                                 bool isFavourite = false;
-                                if (summonersNames
-                                    .any((s) => s == blueSummonerInfo.name)) {
+                                if (summonerServers.any((s) =>
+                                    s.summonerName == blueSummonerInfo.name)) {
                                   isFavourite = true;
                                 }
+                                // ignore: use_build_context_synchronously
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => MatchHistoryPage(
                                       summonerInfo: blueSummonerInfo,
                                       isFavourite: isFavourite,
+                                      serverId: serverId,
                                     ),
                                   ),
                                 );
@@ -412,11 +416,11 @@ class LiveGamePage extends StatelessWidget {
                             fit: BoxFit.fitWidth,
                             child: GestureDetector(
                               onTap: () async {
-                                List<String> summonerNames =
+                                List<SummonerServer> summonerServers =
                                     await loadSummoners();
                                 bool isFavourite = false;
-                                if (summonerNames
-                                    .any((s) => s == redSummonerInfo.name)) {
+                                if (summonerServers.any((s) =>
+                                    s.summonerName == redSummonerInfo.name)) {
                                   isFavourite = true;
                                 }
                                 Navigator.push(

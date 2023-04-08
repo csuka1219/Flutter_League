@@ -59,19 +59,19 @@ class MatchHistoryData with ChangeNotifier {
   List<String> get matches => _matches;
 
   // Fetches the match IDs for the user.
-  Future<void> fetchMatchIds(String puuid) async {
-    _matches = await getMatchIds(puuid);
+  Future<void> fetchMatchIds(String puuid, [String? serverId]) async {
+    _matches = await getMatchIds(puuid, serverId);
   }
 
   // Fetches the match data for the user.
   Future<void> fetchData(String puuid, String summonerName,
-      [bool loadMore = false, bool loadNew = false]) async {
+      [bool loadMore = false, bool loadNew = false, String? serverId]) async {
     if (loadMore) {
       isLoading = true;
     }
     if (loadNew) {
       _isInitialLoading = true;
-      await fetchMatchIds(puuid);
+      await fetchMatchIds(puuid, serverId);
       _matchHistory.clear();
     }
     final List<MatchPreview?> loadedData = [];
@@ -81,7 +81,8 @@ class MatchHistoryData with ChangeNotifier {
     }
     int i = _matchNumber;
     while (i < _matchNumber + 10 && i < _matches.length) {
-      loadedData.add(await getMatchPreview(summonerName, _matches[i]));
+      loadedData
+          .add(await getMatchPreview(summonerName, _matches[i], serverId));
       i++;
     }
     _matchNumber = i;
@@ -102,9 +103,10 @@ class MatchHistoryData with ChangeNotifier {
   }
 
   // Fetches the data for the user's live game.
-  Future<LiveGame?> fetchLiveGameData(String summonerId) async {
+  Future<LiveGame?> fetchLiveGameData(String summonerId,
+      [String? serverId]) async {
     isSearchingLiveGame = true;
-    LiveGame? response = await getLiveGame(summonerId);
+    LiveGame? response = await getLiveGame(summonerId, serverId);
     isSearchingLiveGame = false;
     return response;
   }

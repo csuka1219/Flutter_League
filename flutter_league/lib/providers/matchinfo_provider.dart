@@ -24,12 +24,12 @@ class MatchInfoData with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> initDatas(String matchId) async {
-    _matchInfo = await getMatchInfo(matchId);
+  Future<void> initDatas(String matchId, [String? serverId]) async {
+    _matchInfo = await getMatchInfo(matchId, serverId);
     _playerStats = _matchInfo!.participants;
     _isLoading = true;
     for (var item in matchInfo!.participants) {
-      _summonerInfos.add(await getSummonerByName(item.summonerName));
+      _summonerInfos.add(await getSummonerByName(item.summonerName, serverId));
     }
     isLoading = false;
   }

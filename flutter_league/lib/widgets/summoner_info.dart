@@ -8,8 +8,9 @@ import 'package:flutter_riot_api/utils/loldata_string.dart';
 import 'package:provider/provider.dart';
 
 class SummonerInfo extends StatelessWidget {
-  final Summoner summonerInfo;
-  const SummonerInfo({super.key, required this.summonerInfo});
+  final Summoner summoner;
+  final String? serverId;
+  const SummonerInfo({super.key, required this.summoner, this.serverId});
 
   @override
   Widget build(BuildContext context) {
@@ -19,17 +20,18 @@ class SummonerInfo extends StatelessWidget {
     double width = MediaQuery.of(context).size.width;
 
     return ChangeNotifierProvider(
-      create: (_) => SummonerInfoData(summonerInfo),
+      create: (_) => SummonerInfoData(),
       child: Consumer<SummonerInfoData>(
         builder: (sContext, summonerInfoData, child) {
-          bool showSoloQueue = summonerInfoData.summoner.soloRank != null ||
-              (summonerInfoData.summoner.soloRank == null &&
-                  summonerInfoData.summoner.flexRank == null);
+          summonerInfoData.init(summoner);
+          bool showSoloQueue = summonerInfoData.summoner!.soloRank != null ||
+              (summonerInfoData.summoner!.soloRank == null &&
+                  summonerInfoData.summoner!.flexRank == null);
 
           // Determine if the summoner is unranked
           bool unranked = (showSoloQueue &&
-                  summonerInfoData.summoner.soloRank == null) ||
-              (!showSoloQueue && summonerInfoData.summoner.flexRank == null);
+                  summonerInfoData.summoner!.soloRank == null) ||
+              (!showSoloQueue && summonerInfoData.summoner!.flexRank == null);
           if (summonerInfoData.isLoading) {
             return Container(
               height: 335,
@@ -77,8 +79,9 @@ class SummonerInfo extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => MatchHistoryPage(
-                        summonerInfo: summonerInfoData.summoner,
+                        summonerInfo: summonerInfoData.summoner!,
                         isFavourite: true,
+                        serverId: serverId,
                       ),
                     ),
                   );
@@ -101,14 +104,14 @@ class SummonerInfo extends StatelessWidget {
                     Column(
                       children: [
                         // Display the summoner's icon
-                        _buildsummonerIcon(summonerInfoData.summoner),
+                        _buildsummonerIcon(summonerInfoData.summoner!),
                         const SizedBox(
                           height: 10,
                         ),
                         // Display the summoner's base information
                         _buildSummonerBaseInfo(
                           width,
-                          summonerInfoData.summoner,
+                          summonerInfoData.summoner!,
                           showSoloQueue,
                           unranked,
                         ),
@@ -118,7 +121,8 @@ class SummonerInfo extends StatelessWidget {
                       height: 20,
                     ),
                     // Display the summoner's ranked stats
-                    _buildRankedStats(summonerInfoData.summoner, showSoloQueue),
+                    _buildRankedStats(
+                        summonerInfoData.summoner!, showSoloQueue),
                   ],
                 ),
               ),
@@ -193,13 +197,14 @@ class SummonerInfo extends StatelessWidget {
             height: 10,
           ),
           // display the rank details for the summoner
-          _buildRankDetails(showSoloQueue, unranked),
+          _buildRankDetails(summonerInfo, showSoloQueue, unranked),
         ],
       ),
     );
   }
 
-  Row _buildRankDetails(bool showSoloQueue, bool unranked) {
+  Row _buildRankDetails(
+      Summoner summonerInfo, bool showSoloQueue, bool unranked) {
     // Get the LP, tier, and rank based on the queue type
     final leaguePoints = showSoloQueue
         ? summonerInfo.soloRank?.leaguePoints
@@ -333,10 +338,16 @@ class SummonerInfo extends StatelessWidget {
           isRefresh
               ? summonerInfoData.updateSummoner()
               : {
-                  summonerInfoData.deleteSummoner(summonerInfoData.summoner),
+                  summonerInfoData.deleteSummoner(summonerInfoData.summoner!),
                   context!
                       .read<HomeProvider>()
-                      .removeSummoner(summonerInfoData.summoner)
+                      .removeSummoner(summonerInfoData.summoner!),
+                  serverId,
+                  serverId != null
+                      ? context
+                          .read<HomeProvider>()
+                          .removeSummonerServer(summonerInfoData.summoner!.name)
+                      : null,
                 }
         },
         child: Padding(

@@ -3,6 +3,7 @@ import 'package:flutter_riot_api/color_palette.dart';
 import 'package:flutter_riot_api/model/match.dart';
 import 'package:flutter_riot_api/model/playerstats.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
+import 'package:flutter_riot_api/model/summoner_server.dart';
 import 'package:flutter_riot_api/model/team_header.dart';
 import 'package:flutter_riot_api/providers/matchinfo_provider.dart';
 import 'package:flutter_riot_api/screens/match_details.dart';
@@ -19,11 +20,13 @@ class MatchInfoPage extends StatelessWidget {
   final String summonerName;
   final bool isWin;
   final String matchId;
+  final String? serverId;
   MatchInfoPage({
     Key? key,
     required this.summonerName,
     required this.isWin,
     required this.matchId,
+    this.serverId,
   }) : super(key: key);
   static final ColorPalette colorPalette = ColorPalette();
   List<PlayerStats> playerStats = [];
@@ -40,7 +43,7 @@ class MatchInfoPage extends StatelessWidget {
           builder: (context, matchInfoData, child) {
             if (matchInfoData.isLoading) {
               // If the match info data is still loading, show a progress indicator
-              matchInfoData.initDatas(matchId);
+              matchInfoData.initDatas(matchId, serverId);
               // Get the player stats from the match info data
               return const Center(
                 child: CircularProgressIndicator(),
@@ -235,19 +238,21 @@ class MatchInfoPage extends StatelessWidget {
         return GestureDetector(
           onTap: () async {
             // Load the summoner names from storage
-            List<String> summonerNames = await loadSummoners();
+            List<SummonerServer> summonerNames = await loadSummoners();
 
             // Check if the current summoner is marked as a favorite
-            bool isFavourite =
-                summonerNames.any((s) => s == tempSummonerList[index]!.name);
+            bool isFavourite = summonerNames
+                .any((s) => s.summonerName == tempSummonerList[index]!.name);
 
             // Navigate to the match history page for the current summoner
+            // ignore: use_build_context_synchronously
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => MatchHistoryPage(
                   summonerInfo: tempSummonerList[index]!,
                   isFavourite: isFavourite,
+                  serverId: serverId,
                 ),
               ),
             );

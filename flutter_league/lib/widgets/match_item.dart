@@ -12,12 +12,14 @@ class MatchItem extends StatelessWidget {
   final MatchPreview matchHistory;
   final Summoner summonerInfo;
   final MatchHistoryData matchHistoryData;
+  final String? serverId;
 
   const MatchItem(
       {Key? key,
       required this.matchHistory,
       required this.summonerInfo,
-      required this.matchHistoryData})
+      required this.matchHistoryData,
+      this.serverId})
       : super(key: key);
 
   @override
@@ -32,6 +34,7 @@ class MatchItem extends StatelessWidget {
                     summonerName: summonerInfo.name,
                     isWin: matchHistory.playerStats.win,
                     matchId: matchHistory.matchId,
+                    serverId: serverId,
                   )),
         );
       },

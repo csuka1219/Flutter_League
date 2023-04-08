@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
+import 'package:flutter_riot_api/model/summoner_server.dart';
 import 'package:flutter_riot_api/providers/home_provider.dart';
 import 'package:flutter_riot_api/providers/matchhistoryappbar_provider.dart';
 import 'package:flutter_riot_api/screens/live_match.dart';
+import 'package:flutter_riot_api/utils/config.dart';
 import 'package:flutter_riot_api/utils/loldata_string.dart';
 import 'package:flutter_riot_api/utils/sortby_role.dart';
 import 'package:flutter_riot_api/widgets/match_item.dart';
@@ -13,9 +15,13 @@ import '../providers/matchhistory_provider.dart';
 class MatchHistoryPage extends StatelessWidget {
   final Summoner summonerInfo;
   final bool isFavourite;
+  final String? serverId;
 
   const MatchHistoryPage(
-      {super.key, required this.summonerInfo, required this.isFavourite});
+      {super.key,
+      required this.summonerInfo,
+      required this.isFavourite,
+      this.serverId});
   static final ColorPalette colorPalette = ColorPalette();
 
   @override
@@ -37,7 +43,7 @@ class MatchHistoryPage extends StatelessWidget {
               // If the match history is empty, fetch data and show loading indicator
               matchHistoryData.matchNumber = 0;
               matchHistoryData.fetchData(
-                  summonerInfo.puuid, summonerInfo.name, false, true);
+                  summonerInfo.puuid, summonerInfo.name, false, true, serverId);
               return const Center(child: CircularProgressIndicator());
             }
 
@@ -61,8 +67,8 @@ class MatchHistoryPage extends StatelessWidget {
                       if (!matchHistoryData.isLoading) {
                         matchHistoryData.isLoading = true;
                         matchHistoryData.matchNumber = 0;
-                        matchHistoryData.fetchData(
-                            summonerInfo.puuid, summonerInfo.name, false, true);
+                        matchHistoryData.fetchData(summonerInfo.puuid,
+                            summonerInfo.name, false, true, serverId);
                         matchHistoryData.isLoading = false;
                       }
                     },
@@ -76,6 +82,7 @@ class MatchHistoryPage extends StatelessWidget {
                             matchHistory: matchHistoryData.matchHistory[index]!,
                             summonerInfo: summonerInfo,
                             matchHistoryData: matchHistoryData,
+                            serverId: serverId,
                           );
                         } else {
                           return _buildLoadMoreButton(
@@ -135,13 +142,25 @@ class MatchHistoryPage extends StatelessWidget {
       Summoner summonerInfo, BuildContext context) {
     bool isFavourite = !appBarData.isFavourite;
     if (isFavourite) {
-      appBarData.saveSummoners(summonerInfo);
+      appBarData.saveSummoners(summonerInfo, serverId);
       Provider.of<HomeProvider>(context, listen: false)
           .addSummoner(summonerInfo);
+      Provider.of<HomeProvider>(context, listen: false).summonerServers.add(
+            SummonerServer(
+                summonerName: summonerInfo.name,
+                server: serverId ?? Config.currentServer),
+          );
     } else {
       appBarData.deleteSummoner(summonerInfo);
       Provider.of<HomeProvider>(context, listen: false)
           .removeSummoner(summonerInfo);
+      serverId != null
+          ? Provider.of<HomeProvider>(context, listen: false)
+              .summonerServers
+              .removeWhere(
+                ((element) => element.summonerName == summonerInfo.name),
+              )
+          : null;
     }
     appBarData.isFavourite = isFavourite;
   }
@@ -229,16 +248,18 @@ class MatchHistoryPage extends StatelessWidget {
           onPressed: () async {
             final liveGame = await context
                 .read<MatchHistoryData>()
-                .fetchLiveGameData(summonerInfo.id);
+                .fetchLiveGameData(summonerInfo.id, serverId);
             if (liveGame == null) return;
 
             sortByRole(liveGame.participants);
 
+            // ignore: use_build_context_synchronously
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => LiveGamePage(
                   liveGameData: liveGame,
+                  serverId: serverId,
                 ),
               ),
             );
@@ -365,7 +386,7 @@ class MatchHistoryPage extends StatelessWidget {
             onPressed: () {
               // When the button is pressed, call fetchData method to load more data
               matchHistoryData.fetchData(
-                  summonerInfo.puuid, summonerInfo.name, true);
+                  summonerInfo.puuid, summonerInfo.name, true, false, serverId);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: ColorPalette().primary,

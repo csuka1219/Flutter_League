@@ -1,10 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
+import 'package:flutter_riot_api/model/summoner_server.dart';
 import 'package:flutter_riot_api/services/summoner_service.dart';
+import 'package:flutter_riot_api/utils/config.dart';
+import 'package:flutter_riot_api/utils/loldata_string.dart';
 import 'package:flutter_riot_api/utils/storage.dart';
 
 class HomeProvider with ChangeNotifier {
   List<Summoner?> summoners = [];
+  List<SummonerServer> summonerServers = [];
+
+  String? getFavouriteSummonerServerId(String summonerName) {
+    for (var item in summonerServers) {
+      if (item.summonerName == summonerName) {
+        return item.server;
+      }
+    }
+    return null;
+  }
+
+  void removeSummonerServer(String summonerName) {
+    summonerServers.removeWhere(
+      ((element) => element.summonerName == summonerName),
+    );
+  }
 
   bool _isLoading = true;
 
@@ -26,9 +45,10 @@ class HomeProvider with ChangeNotifier {
   }
 
   Future<void> initSummoners() async {
-    List<String> summonerNames = await loadSummoners();
-    for (String summonerName in summonerNames) {
-      summoners.add(await getSummonerByName(summonerName));
+    summonerServers = await loadSummoners();
+    for (SummonerServer summonerServer in summonerServers) {
+      summoners.add(await getSummonerByName(
+          summonerServer.summonerName, summonerServer.server));
     }
     isLoading = false;
     notifyListeners();
@@ -52,5 +72,23 @@ class HomeProvider with ChangeNotifier {
   set summomnerName(String value) {
     _summomnerName = value;
     notifyListeners();
+  }
+
+  String? _serverId;
+  String? get serverId => _serverId;
+
+  String? _serverName;
+  String? get serverName => _serverName;
+
+  set serverName(String? serverId) {
+    _serverName = getServerName(serverId!);
+    _serverId = serverId;
+    notifyListeners();
+  }
+
+  Future<void> init() async {
+    String? serverId = await getServerId();
+    Config.currentServer = serverId ?? "eun1";
+    serverName = serverId ?? "eun1";
   }
 }

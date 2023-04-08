@@ -1,16 +1,21 @@
 import 'dart:convert';
 import 'package:flutter_riot_api/model/live_game.dart';
 import 'package:flutter_riot_api/model/match_preview.dart';
+import 'package:flutter_riot_api/utils/loldata_string.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_riot_api/utils/constants.dart';
+import 'package:flutter_riot_api/utils/config.dart';
 
 // Returns a MatchPreview object containing information about the specified match
-Future<MatchPreview?> getMatchPreview(
-    String summonerName, String matchId) async {
-  final matchResponse = await http.get(
-    Uri.parse(
-        '${apiUrl2}match/v5/matches/$matchId?api_key=$apikey'), // Send a GET request to the Riot API to fetch match data
-  );
+Future<MatchPreview?> getMatchPreview(String summonerName, String matchId,
+    [String? serverId]) async {
+  String apiUrl =
+      '${Config.apiUrlRegion}match/v5/matches/$matchId?api_key=${Config.apikey}'; // Send a GET request to the Riot API to fetch match data
+
+  if (serverId != null) {
+    apiUrl = apiUrl.replaceFirst(
+        Config.currentRegion, getRegionFromServerId(serverId));
+  }
+  final matchResponse = await http.get(Uri.parse(apiUrl));
 
   if (matchResponse.statusCode == 200) {
     // If the request was successful
@@ -32,12 +37,18 @@ Future<MatchPreview?> getMatchPreview(
 }
 
 // Returns a list of match IDs for a given summoner PUUID
-Future<List<String>> getMatchIds(String puuid) async {
+Future<List<String>> getMatchIds(String puuid, [String? serverId]) async {
   List<String> response = [];
 
+  String apiUrl =
+      '${Config.apiUrlRegion}match/v5/matches/by-puuid/$puuid/ids?start=0&count=100&api_key=${Config.apikey}';
+  if (serverId != null) {
+    apiUrl = apiUrl.replaceFirst(
+        Config.currentRegion, getRegionFromServerId(serverId));
+  }
   final matchIdResponse = await http.get(
     Uri.parse(
-        '${apiUrl2}match/v5/matches/by-puuid/$puuid/ids?start=0&count=100&api_key=$apikey'), // Send a GET request to the Riot API to fetch match IDs for the summoner
+        apiUrl), // Send a GET request to the Riot API to fetch match IDs for the summoner
   );
 
   if (matchIdResponse.statusCode == 200) {
@@ -52,12 +63,16 @@ Future<List<String>> getMatchIds(String puuid) async {
   return response;
 }
 
-Future<LiveGame?> getLiveGame(String summonerId) async {
+Future<LiveGame?> getLiveGame(String summonerId, [String? serverId]) async {
   final response;
-  //https://eun1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/?api_key=RGAPI-b92bd82f-9292-4b10-8051-f100e5a1d1aa
+  String apiUrl =
+      '${Config.apiUrl}spectator/v4/active-games/by-summoner/$summonerId/?api_key=${Config.apikey}';
+  if (serverId != null) {
+    apiUrl = apiUrl.replaceFirst(Config.currentServer, serverId);
+  }
   final liveGameResponse = await http.get(
     Uri.parse(
-        '${apiUrl}spectator/v4/active-games/by-summoner/$summonerId/?api_key=$apikey'), // Send a GET request to the Riot API to fetch live game data for the summoner
+        apiUrl), // Send a GET request to the Riot API to fetch live game data for the summoner
   );
 
   if (liveGameResponse.statusCode == 200) {

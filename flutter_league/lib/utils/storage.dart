@@ -1,27 +1,46 @@
 import 'dart:convert';
 
 import 'package:flutter_riot_api/model/summoner.dart';
+import 'package:flutter_riot_api/model/summoner_server.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 late SharedPreferences _prefs;
-Future<List<String>> loadSummoners() async {
+Future<List<SummonerServer>> loadSummoners() async {
   _prefs = await SharedPreferences.getInstance();
-  List<String>? summonersNames = _prefs.getStringList('favourite_summoners');
-  if (summonersNames != null) {
-    return summonersNames;
+  final jsonStringList = _prefs.getStringList('favourite_summoners');
+  if (jsonStringList != null) {
+    final summonerServers = jsonStringList
+        .map((jsonString) => SummonerServer.fromJson(jsonDecode(jsonString)))
+        .toList();
+    return summonerServers;
   }
   return [];
 }
 
-Future<void> saveSummoner(List<String> summonersJson) async {
+Future<void> saveSummoner(List<SummonerServer> summonerServers) async {
   await _prefs.remove('favourite_summoners');
-  await _prefs.setStringList('favourite_summoners', summonersJson);
+  final jsonString = summonerServers
+      .map((summonerServer) => jsonEncode(summonerServer.toJson()))
+      .toList();
+  await _prefs.setStringList('favourite_summoners', jsonString);
+}
+
+Future<void> saveServerId(String serverId) async {
+  await _prefs.remove('serverId');
+  await _prefs.setString('serverId', serverId);
+}
+
+Future<String?> getServerId() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? serverId = prefs.getString('serverId');
+  return serverId ?? "eun1";
 }
 
 Future<void> deleteSummonerPref(String summonerName) async {
-  List<String> summonersNames = await loadSummoners();
-  if (summonersNames.isNotEmpty) {
-    summonersNames.removeWhere((name) => name == summonerName);
-    await _prefs.setStringList('favourite_summoners', summonersNames);
+  List<SummonerServer> summonerServers = await loadSummoners();
+  if (summonerServers.isNotEmpty) {
+    summonerServers
+        .removeWhere((element) => element.summonerName == summonerName);
+    await saveSummoner(summonerServers);
   }
 }

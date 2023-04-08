@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
+import 'package:flutter_riot_api/model/summoner_server.dart';
 import 'package:flutter_riot_api/providers/home_provider.dart';
 import 'package:flutter_riot_api/screens/match_history.dart';
 import 'package:flutter_riot_api/services/summoner_service.dart';
+import 'package:flutter_riot_api/utils/config.dart';
 import 'package:flutter_riot_api/widgets/summoner_info.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_riot_api/widgets/custom_appbar.dart';
@@ -25,6 +27,9 @@ class HomeScreen extends StatelessWidget {
     if (context.read<HomeProvider>().summoners.isEmpty ||
         context.read<HomeProvider>().isLoading) {
       context.read<HomeProvider>().initSummoners();
+    }
+    if (!context.read<HomeProvider>().isLoading) {
+      context.read<HomeProvider>().init();
     }
 
     // Build the UI using a Scaffold widget and a Stack widget
@@ -72,7 +77,13 @@ class HomeScreen extends StatelessWidget {
                                 for (Summoner? summoner
                                     in context.read<HomeProvider>().summoners)
                                   if (summoner != null)
-                                    _buildSummonerInfo(summoner),
+                                    _buildSummonerInfo(
+                                      summoner,
+                                      context
+                                          .read<HomeProvider>()
+                                          .getFavouriteSummonerServerId(
+                                              summoner.name),
+                                    ),
                               ],
                             ),
                     ],
@@ -154,10 +165,11 @@ class HomeScreen extends StatelessWidget {
         );
         // If the summoner info is null, do nothing and return.
         if (summonerInfo == null) return; //TODO nem létező summoner
-        // Load the list of summoner names from local storage.
-        List<String> summonerNames = await loadSummoners();
         // Check if the searched summoner is already a favorite.
-        bool isFavourite = summonerNames.any((s) => s == summonerInfo.name);
+        bool isFavourite = context
+            .read<HomeProvider>()
+            .summonerServers
+            .any((s) => s.summonerName == summonerInfo.name);
         // Navigate to the match history page, passing the Summoner info and favorite status as arguments.
         // ignore: use_build_context_synchronously
         Navigator.push(
@@ -182,10 +194,12 @@ class HomeScreen extends StatelessWidget {
           Summoner? summonerInfo = await getSummonerByName(value);
           // If the summoner info is null, do nothing and return.
           if (summonerInfo == null) return; //TODO nem létező summoner
-          // Load the list of summoner names from local storage.
-          List<String> summonerNames = await loadSummoners();
           // Check if the searched summoner is already a favorite.
-          bool isFavourite = summonerNames.any((s) => s == summonerInfo.name);
+          var a = context.read<HomeProvider>().summonerServers;
+          bool isFavourite = context
+              .read<HomeProvider>()
+              .summonerServers
+              .any((s) => s.summonerName == summonerInfo.name);
           // Navigate to the match history page, passing the Summoner info and favorite status as arguments.
           // ignore: use_build_context_synchronously
           Navigator.push(
@@ -211,9 +225,10 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  SummonerInfo _buildSummonerInfo(Summoner summoner) {
+  SummonerInfo _buildSummonerInfo(Summoner summoner, [String? serverId]) {
     return SummonerInfo(
-      summonerInfo: summoner,
+      summoner: summoner,
+      serverId: serverId,
     );
   }
 
@@ -295,22 +310,22 @@ class HomeScreen extends StatelessWidget {
   }
 
   final List<String> options = [
-    "EUN1",
-    "EUW1",
-    "JP1",
-    "BR1",
-    "KR",
-    "LA1",
-    "LA2",
-    "NA1",
-    "OC1",
-    "PH2",
-    "RU",
-    "SG2",
-    "TH2",
-    "TR1",
-    "TW2",
-    "VN2",
+    "eun1",
+    "euw1",
+    "jp1",
+    "br1",
+    "kr",
+    "la1",
+    "la2",
+    "na1",
+    "oc1",
+    "ph2",
+    "ru",
+    "sg2",
+    "th2",
+    "tr1",
+    "tw2",
+    "vn2",
   ];
 
   /// A widget that displays a list of options in a dropdown menu
@@ -332,7 +347,10 @@ class HomeScreen extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         // When the user taps on an option, set the dropdown to be closed
-        onTap: () {
+        onTap: () async {
+          Config.currentServer = option;
+          saveServerId(option);
+          context.read<HomeProvider>().serverName = option;
           context.read<HomeProvider>().setFalse();
         },
         child: Column(
