@@ -100,23 +100,31 @@ class MatchHistoryPage extends StatelessWidget {
     );
   }
 
+  /// This method returns a PreferredSize widget, which is used to set the size of the AppBar.
   PreferredSize _buildAppBar(BuildContext bContext, bool isFavourite) {
     return PreferredSize(
+      // This sets the preferred size of the AppBar to a constant height.
       preferredSize: const Size.fromHeight(kToolbarHeight),
       child: AppBar(
+        // This sets the color of the back button and any other icons in the AppBar.
         iconTheme: IconThemeData(
           color: colorPalette.secondary,
         ),
+        // This sets the background color of the AppBar.
         backgroundColor: colorPalette.primary,
+        // This sets the title of the AppBar to the summoner's name.
         title: Text(
           summonerInfo.name,
           style: TextStyle(color: colorPalette.secondary),
         ),
+        // This adds an icon button to the right side of the AppBar.
         actions: [
+          // This creates a ChangeNotifierProvider for the MatchHistoryAppBarIcon.
           ChangeNotifierProvider(
             create: (_) => MatchHistoryAppBarIcon(isFavourite),
             child: Consumer<MatchHistoryAppBarIcon>(
               builder: (context, appBarData, child) {
+                // This returns an IconButton that toggles the favourite status when pressed.
                 return IconButton(
                   splashRadius: 1,
                   color: colorPalette.secondary,
@@ -138,22 +146,27 @@ class MatchHistoryPage extends StatelessWidget {
     );
   }
 
+  /// This function toggles the favourite status of the summoner represented by the given MatchHistoryAppBarIcon.
   void _toggleFavourite(MatchHistoryAppBarIcon appBarData,
       Summoner summonerInfo, BuildContext context) {
-    bool isFavourite = !appBarData.isFavourite;
+    bool isFavourite = !appBarData.isFavourite; // Toggle the favourite status.
     if (isFavourite) {
+      // If the summoner is now a favourite, add them to the home provider and to the list of favourite summoners in the MatchHistoryAppBarIcon.
       appBarData.saveSummoners(summonerInfo, serverId);
       Provider.of<HomeProvider>(context, listen: false)
           .addSummoner(summonerInfo);
       Provider.of<HomeProvider>(context, listen: false).summonerServers.add(
             SummonerServer(
-                puuid: summonerInfo.puuid,
-                server: serverId ?? Config.currentServer),
+              puuid: summonerInfo.puuid,
+              server: serverId ?? Config.currentServer,
+            ),
           );
     } else {
+      // If the summoner is no longer a favourite, remove them from the home provider and from the list of favourite summoners in the MatchHistoryAppBarIcon.
       appBarData.deleteSummoner(summonerInfo);
       Provider.of<HomeProvider>(context, listen: false)
           .removeSummoner(summonerInfo);
+      // If a server ID was provided, also remove the summoner from the list of summoners for that server.
       serverId != null
           ? Provider.of<HomeProvider>(context, listen: false)
               .summonerServers
@@ -162,26 +175,32 @@ class MatchHistoryPage extends StatelessWidget {
               )
           : null;
     }
+    // Update the favourite status in the MatchHistoryAppBarIcon.
     appBarData.isFavourite = isFavourite;
   }
 
+  /// This function returns a widget that displays information about the summoner's rank, league points, and win rate.
   Widget _buildSummonerHeader(BuildContext context, bool isSoloQueue) {
+    // Get the rank information for the appropriate queue type.
     final rankInfo =
         isSoloQueue ? summonerInfo.soloRank! : summonerInfo.flexRank!;
     final rankTier = rankInfo.tier!;
     final rank = rankInfo.rank!;
     final leaguePoints = rankInfo.leaguePoints!;
-    final winRate = getWinrate(isSoloQueue, summonerInfo);
+    final winRate = getWinrate(
+        isSoloQueue, summonerInfo); // Calculate the summoner's win rate.
 
+    // Build a container containing the rank information, queue type, and live button.
     return Container(
       padding: const EdgeInsets.all(16.0),
       color: Colors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildRankInfo(rankTier, rank, leaguePoints, winRate),
-          _buildQueueType(isSoloQueue, context),
-          _buildLiveButton(context),
+          _buildRankInfo(rankTier, rank, leaguePoints,
+              winRate), // Display the rank information.
+          _buildQueueType(isSoloQueue, context), // Display the queue type.
+          _buildLiveButton(context), // Display the live button.
         ],
       ),
     );
@@ -191,6 +210,7 @@ class MatchHistoryPage extends StatelessWidget {
       String rankTier, String rank, int leaguePoints, String winRate) {
     return Row(
       children: [
+        // Widget to display the rank emblem
         Container(
           width: 32.0,
           height: 32.0,
@@ -204,6 +224,7 @@ class MatchHistoryPage extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Widget to display the rank and tier of the user
             Text(
               '$rankTier $rank',
               style: const TextStyle(
@@ -212,6 +233,7 @@ class MatchHistoryPage extends StatelessWidget {
                 color: Colors.black,
               ),
             ),
+            // Widget to display the user's league points and win rate
             Text(
               '$leaguePoints LP, $winRate% WR',
               style: const TextStyle(
@@ -228,10 +250,11 @@ class MatchHistoryPage extends StatelessWidget {
   Widget _buildQueueType(bool isSoloQueue, BuildContext context) {
     return GestureDetector(
       onTap: () {
+        // Toggle the queue type when tapped
         context.read<MatchHistoryData>().toggleSoloQueue();
       },
       child: Text(
-        isSoloQueue ? 'Solo/Duo' : 'Flex',
+        isSoloQueue ? 'Solo/Duo' : 'Flex', // Display the current queue type
         style: const TextStyle(
           fontSize: 16.0,
           fontWeight: FontWeight.bold,
@@ -241,18 +264,27 @@ class MatchHistoryPage extends StatelessWidget {
     );
   }
 
+  /// Builds a button that allows the user to navigate to the live game page for the
+  /// current summoner. When pressed, this button fetches the live game data for the
+  /// summoner and navigates to the `LiveGamePage` with the fetched data.
   Widget _buildLiveButton(BuildContext context) {
     return Row(
       children: [
+        // The ElevatedButton widget
         ElevatedButton(
+          // When the button is pressed
           onPressed: () async {
+            // Fetch live game data using the summoner ID and server ID from the context's MatchHistoryData object
             final liveGame = await context
                 .read<MatchHistoryData>()
                 .fetchLiveGameData(summonerInfo.id, serverId);
+            // If live game data is null, return
             if (liveGame == null) return;
 
+            // Sort the participants by role
             sortByRole(liveGame.participants);
 
+            // Navigate to the LiveGamePage passing in live game data and server ID
             // ignore: use_build_context_synchronously
             Navigator.push(
               context,
@@ -264,6 +296,7 @@ class MatchHistoryPage extends StatelessWidget {
               ),
             );
           },
+          // Button styling
           style: ElevatedButton.styleFrom(
             backgroundColor: colorPalette.primary,
             shape: RoundedRectangleBorder(
@@ -272,6 +305,7 @@ class MatchHistoryPage extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           ),
+          // Button text
           child: const Text(
             'Live',
             style: TextStyle(
@@ -285,16 +319,20 @@ class MatchHistoryPage extends StatelessWidget {
     );
   }
 
+  /// This function returns a header widget for an unranked summoner.
   Widget _buildUnrankedSummonerHeader(BuildContext context) {
     return Container(
+      // Add padding and background color to the container
       padding: const EdgeInsets.all(16.0),
       color: Colors.white,
       child: Row(
+        // Align children in the main axis with space in between
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Rank icon and text
           Row(
             children: [
+              // Add a gray box as a placeholder for the rank icon
               Container(
                 width: 32.0,
                 height: 32.0,
@@ -304,7 +342,7 @@ class MatchHistoryPage extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
-                  // Rank name
+                  // Add text for the rank name
                   Text(
                     "Unranked",
                     style: TextStyle(
@@ -318,12 +356,14 @@ class MatchHistoryPage extends StatelessWidget {
             ],
           ),
 
-          // Solo/Duo or Flex
+          // Solo/Duo or Flex text that toggles when tapped
           GestureDetector(
             onTap: () {
+              // Toggle between Solo/Duo and Flex using the MatchHistoryData provider
               context.read<MatchHistoryData>().toggleSoloQueue();
             },
             child: Text(
+              // Show the current mode based on the isSoloQueue boolean in the MatchHistoryData provider
               context.watch<MatchHistoryData>().isSoloQueue
                   ? 'Solo/Duo'
                   : 'Flex',
@@ -335,7 +375,7 @@ class MatchHistoryPage extends StatelessWidget {
             ),
           ),
 
-          // Refresh and graph buttons
+          // Live button
           Row(
             children: [
               ElevatedButton(
@@ -364,9 +404,10 @@ class MatchHistoryPage extends StatelessWidget {
     );
   }
 
+  /// This widget builds a "Load More" button that loads additional match history data
   Widget _buildLoadMoreButton(
       BuildContext context, MatchHistoryData matchHistoryData) {
-    // Add margin around the button or progress
+    // Define a constant margin for the button or progress widget
     const margin = EdgeInsets.symmetric(vertical: 12.0);
 
     if (context.watch<MatchHistoryData>().isLoading) {
