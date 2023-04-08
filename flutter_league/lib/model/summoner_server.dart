@@ -1,19 +1,19 @@
 class SummonerServer {
-  final String summonerName;
+  final String puuid;
   final String server;
 
-  SummonerServer({required this.summonerName, required this.server});
+  SummonerServer({required this.puuid, required this.server});
 
   Map<String, dynamic> toJson() {
     return {
-      'summonerName': summonerName,
+      'puuid': puuid,
       'server': server,
     };
   }
 
   factory SummonerServer.fromJson(Map<String, dynamic> json) {
     return SummonerServer(
-      summonerName: json['summonerName'],
+      puuid: json['puuid'],
       server: json['server'],
     );
   }

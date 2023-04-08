@@ -82,7 +82,7 @@ class HomeScreen extends StatelessWidget {
                                       context
                                           .read<HomeProvider>()
                                           .getFavouriteSummonerServerId(
-                                              summoner.name),
+                                              summoner.puuid),
                                     ),
                               ],
                             ),
@@ -159,7 +159,7 @@ class HomeScreen extends StatelessWidget {
       // The search icon is a Material icon with a custom primary color.
       icon: Icon(Icons.search, color: colorPalette.primary),
       onPressed: () async {
-        // Call the getSummonerByName function to retrieve Summoner info based on the entered name.
+        // Call the s function to retrieve Summoner info based on the entered name.
         Summoner? summonerInfo = await getSummonerByName(
           context.read<HomeProvider>().summomnerName,
         );
@@ -169,7 +169,7 @@ class HomeScreen extends StatelessWidget {
         bool isFavourite = context
             .read<HomeProvider>()
             .summonerServers
-            .any((s) => s.summonerName == summonerInfo.name);
+            .any((s) => s.puuid == summonerInfo.puuid);
         // Navigate to the match history page, passing the Summoner info and favorite status as arguments.
         // ignore: use_build_context_synchronously
         Navigator.push(
@@ -195,11 +195,10 @@ class HomeScreen extends StatelessWidget {
           // If the summoner info is null, do nothing and return.
           if (summonerInfo == null) return; //TODO nem létező summoner
           // Check if the searched summoner is already a favorite.
-          var a = context.read<HomeProvider>().summonerServers;
           bool isFavourite = context
               .read<HomeProvider>()
               .summonerServers
-              .any((s) => s.summonerName == summonerInfo.name);
+              .any((s) => s.puuid == summonerInfo.puuid);
           // Navigate to the match history page, passing the Summoner info and favorite status as arguments.
           // ignore: use_build_context_synchronously
           Navigator.push(

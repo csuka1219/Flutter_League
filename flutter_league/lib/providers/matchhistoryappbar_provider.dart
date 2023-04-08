@@ -21,15 +21,14 @@ class MatchHistoryAppBarIcon with ChangeNotifier {
   void saveSummoners(Summoner summoner, [String? serverId]) async {
     List<SummonerServer> summonerServers = [];
     summonerServers = await loadSummoners();
-    if (!summonerServers.any((s) => s.summonerName == summoner.name)) {
+    if (!summonerServers.any((s) => s.puuid == summoner.puuid)) {
       summonerServers.add(SummonerServer(
-          summonerName: summoner.name,
-          server: serverId ?? Config.currentServer));
+          puuid: summoner.puuid, server: serverId ?? Config.currentServer));
     }
     saveSummoner(summonerServers);
   }
 
   void deleteSummoner(Summoner summoner) async {
-    await deleteSummonerPref(summoner.name);
+    await deleteSummonerPref(summoner.puuid);
   }
 }

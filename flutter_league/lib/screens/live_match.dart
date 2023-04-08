@@ -345,8 +345,8 @@ class LiveGamePage extends StatelessWidget {
                                 List<SummonerServer> summonerServers =
                                     await loadSummoners();
                                 bool isFavourite = false;
-                                if (summonerServers.any((s) =>
-                                    s.summonerName == blueSummonerInfo.name)) {
+                                if (summonerServers.any(
+                                    (s) => s.puuid == blueSummonerInfo.puuid)) {
                                   isFavourite = true;
                                 }
                                 // ignore: use_build_context_synchronously
@@ -419,8 +419,8 @@ class LiveGamePage extends StatelessWidget {
                                 List<SummonerServer> summonerServers =
                                     await loadSummoners();
                                 bool isFavourite = false;
-                                if (summonerServers.any((s) =>
-                                    s.summonerName == redSummonerInfo.name)) {
+                                if (summonerServers.any(
+                                    (s) => s.puuid == redSummonerInfo.puuid)) {
                                   isFavourite = true;
                                 }
                                 Navigator.push(

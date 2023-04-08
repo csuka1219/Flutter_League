@@ -10,18 +10,18 @@ class HomeProvider with ChangeNotifier {
   List<Summoner?> summoners = [];
   List<SummonerServer> summonerServers = [];
 
-  String? getFavouriteSummonerServerId(String summonerName) {
+  String? getFavouriteSummonerServerId(String puuid) {
     for (var item in summonerServers) {
-      if (item.summonerName == summonerName) {
+      if (item.puuid == puuid) {
         return item.server;
       }
     }
     return null;
   }
 
-  void removeSummonerServer(String summonerName) {
+  void removeSummonerServer(String puuid) {
     summonerServers.removeWhere(
-      ((element) => element.summonerName == summonerName),
+      ((element) => element.puuid == puuid),
     );
   }
 
@@ -47,8 +47,8 @@ class HomeProvider with ChangeNotifier {
   Future<void> initSummoners() async {
     summonerServers = await loadSummoners();
     for (SummonerServer summonerServer in summonerServers) {
-      summoners.add(await getSummonerByName(
-          summonerServer.summonerName, summonerServer.server));
+      summoners.add(await getSummonerByPuuid(
+          summonerServer.puuid, summonerServer.server));
     }
     isLoading = false;
     notifyListeners();

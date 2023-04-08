@@ -36,11 +36,10 @@ Future<String?> getServerId() async {
   return serverId ?? "eun1";
 }
 
-Future<void> deleteSummonerPref(String summonerName) async {
+Future<void> deleteSummonerPref(String puuid) async {
   List<SummonerServer> summonerServers = await loadSummoners();
   if (summonerServers.isNotEmpty) {
-    summonerServers
-        .removeWhere((element) => element.summonerName == summonerName);
+    summonerServers.removeWhere((element) => element.puuid == puuid);
     await saveSummoner(summonerServers);
   }
 }

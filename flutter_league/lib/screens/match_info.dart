@@ -242,7 +242,7 @@ class MatchInfoPage extends StatelessWidget {
 
             // Check if the current summoner is marked as a favorite
             bool isFavourite = summonerNames
-                .any((s) => s.summonerName == tempSummonerList[index]!.name);
+                .any((s) => s.puuid == tempSummonerList[index]!.puuid);
 
             // Navigate to the match history page for the current summoner
             // ignore: use_build_context_synchronously

@@ -147,7 +147,7 @@ class MatchHistoryPage extends StatelessWidget {
           .addSummoner(summonerInfo);
       Provider.of<HomeProvider>(context, listen: false).summonerServers.add(
             SummonerServer(
-                summonerName: summonerInfo.name,
+                puuid: summonerInfo.puuid,
                 server: serverId ?? Config.currentServer),
           );
     } else {
@@ -158,7 +158,7 @@ class MatchHistoryPage extends StatelessWidget {
           ? Provider.of<HomeProvider>(context, listen: false)
               .summonerServers
               .removeWhere(
-                ((element) => element.summonerName == summonerInfo.name),
+                ((element) => element.puuid == summonerInfo.puuid),
               )
           : null;
     }

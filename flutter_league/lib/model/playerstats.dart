@@ -1,5 +1,6 @@
 class PlayerStats {
   final String summonerName;
+  final String puuid;
   final int assists;
   final int champLevel;
   final int championId;
@@ -32,6 +33,7 @@ class PlayerStats {
 
   PlayerStats(
       {required this.summonerName,
+      required this.puuid,
       required this.assists,
       required this.champLevel,
       required this.championId,
@@ -61,6 +63,7 @@ class PlayerStats {
       Map<String, dynamic> json, Map<String, dynamic> perksJson) {
     return PlayerStats(
       summonerName: json['summonerName'],
+      puuid: json['puuid'],
       assists: json['assists'],
       champLevel: json['champLevel'],
       championId: json['championId'],

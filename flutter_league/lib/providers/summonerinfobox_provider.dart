@@ -26,7 +26,7 @@ class SummonerInfoData with ChangeNotifier {
   }
 
   void deleteSummoner(Summoner summoner) async {
-    await deleteSummonerPref(summoner.name);
+    await deleteSummonerPref(summoner.puuid);
   }
 
   void init(Summoner summoner) {

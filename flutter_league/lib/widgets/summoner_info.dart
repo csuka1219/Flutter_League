@@ -344,9 +344,8 @@ class SummonerInfo extends StatelessWidget {
                       .removeSummoner(summonerInfoData.summoner!),
                   serverId,
                   serverId != null
-                      ? context
-                          .read<HomeProvider>()
-                          .removeSummonerServer(summonerInfoData.summoner!.name)
+                      ? context.read<HomeProvider>().removeSummonerServer(
+                          summonerInfoData.summoner!.puuid)
                       : null,
                 }
         },

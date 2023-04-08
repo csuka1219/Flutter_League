@@ -29,7 +29,7 @@ class MatchInfoData with ChangeNotifier {
     _playerStats = _matchInfo!.participants;
     _isLoading = true;
     for (var item in matchInfo!.participants) {
-      _summonerInfos.add(await getSummonerByName(item.summonerName, serverId));
+      _summonerInfos.add(await getSummonerByPuuid(item.puuid, serverId));
     }
     isLoading = false;
   }
