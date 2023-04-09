@@ -165,6 +165,7 @@ class HomeScreen extends StatelessWidget {
         // If the summoner info is null, do nothing and return.
         if (summonerInfo == null) return; //TODO nem létező summoner
         // Check if the searched summoner is already a favorite.
+        // ignore: use_build_context_synchronously
         bool isFavourite = context
             .read<HomeProvider>()
             .summonerServers
@@ -194,6 +195,7 @@ class HomeScreen extends StatelessWidget {
           // If the summoner info is null, do nothing and return.
           if (summonerInfo == null) return; //TODO nem létező summoner
           // Check if the searched summoner is already a favorite.
+          // ignore: use_build_context_synchronously
           bool isFavourite = context
               .read<HomeProvider>()
               .summonerServers
