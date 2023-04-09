@@ -33,74 +33,31 @@ class MatchInfoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Initialize an empty list of player stats
-
     return Scaffold(
-      appBar: _buildAppBar(context),
+      appBar: _buildAppBar(context), // Set the app bar
       body: ChangeNotifierProvider(
-        create: (_) => MatchInfoData(),
+        create: (_) =>
+            MatchInfoData(), // Create a new instance of the match info data
         child: Consumer<MatchInfoData>(
           builder: (context, matchInfoData, child) {
             if (matchInfoData.isLoading) {
               // If the match info data is still loading, show a progress indicator
-              matchInfoData.initDatas(matchId, serverId);
-              // Get the player stats from the match info data
+              matchInfoData.initDatas(
+                  matchId, serverId); // Initialize the match info data
+              // Return the progress indicator
               return const Center(
                 child: CircularProgressIndicator(),
               );
             }
 
-            playerStats = matchInfoData.matchInfo!.participants;
+            playerStats = matchInfoData.matchInfo!
+                .participants; // Get the player stats from the match info data
             // Return the main content of the screen
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Show the result of the match
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: Container(
-                    color: colorPalette.primary,
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          isWin ? "Victory" : "Defeat",
-                          style: TextStyle(
-                            color: isWin ? Colors.green[400] : Colors.red[400],
-                            fontSize: 24.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8.0),
-                        // Show the game mode and duration
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "${getGameModeByQueueId(matchInfoData.matchInfo!.queueId)} - ${getFormattedDuration(matchInfoData.matchInfo!.gameDuration)}",
-                              style: TextStyle(
-                                color:
-                                    isWin ? Colors.green[400] : Colors.red[400],
-                                fontSize: 16.0,
-                              ),
-                            ),
-                            const SizedBox(width: 4.0),
-                            Icon(
-                              Icons.schedule,
-                              color:
-                                  isWin ? Colors.green[400] : Colors.red[400],
-                              size: 16.0,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                _buildMatchHeader(matchInfoData),
                 const SizedBox(height: 8.0),
                 Expanded(
                   child: SingleChildScrollView(
@@ -192,6 +149,56 @@ class MatchInfoPage extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+
+  /// Builds the header for the match information, including the result of the match, the game mode, and the duration.
+  Container _buildMatchHeader(MatchInfoData matchInfoData) {
+    // Create a container with a blue background and rounded corners
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.blue,
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Container(
+        // Create a child container with a primary-colored background and padding
+        color: colorPalette.primary,
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Display a text widget that says either "Victory" or "Defeat"
+            Text(
+              isWin ? "Victory" : "Defeat",
+              style: TextStyle(
+                color: isWin ? Colors.green[400] : Colors.red[400],
+                fontSize: 24.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8.0),
+            // Display a row with the game mode and duration, along with a clock icon
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "${getGameModeByQueueId(matchInfoData.matchInfo!.queueId)} - ${getFormattedDuration(matchInfoData.matchInfo!.gameDuration)}",
+                  style: TextStyle(
+                    color: isWin ? Colors.green[400] : Colors.red[400],
+                    fontSize: 16.0,
+                  ),
+                ),
+                const SizedBox(width: 4.0),
+                Icon(
+                  Icons.schedule,
+                  color: isWin ? Colors.green[400] : Colors.red[400],
+                  size: 16.0,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 

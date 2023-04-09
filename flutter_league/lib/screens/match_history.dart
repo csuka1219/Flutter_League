@@ -430,7 +430,7 @@ class MatchHistoryPage extends StatelessWidget {
                   summonerInfo.puuid, summonerInfo.name, true, false, serverId);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: ColorPalette().primary,
+              backgroundColor: colorPalette.primary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16.0),
               ),

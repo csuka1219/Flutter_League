@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
-import 'package:flutter_riot_api/model/summoner_server.dart';
 import 'package:flutter_riot_api/providers/home_provider.dart';
 import 'package:flutter_riot_api/screens/match_history.dart';
 import 'package:flutter_riot_api/services/summoner_service.dart';

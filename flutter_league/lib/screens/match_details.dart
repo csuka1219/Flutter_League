@@ -7,59 +7,93 @@ import 'package:tuple/tuple.dart';
 class MatchDetailsPage extends StatelessWidget {
   final List<PlayerStats> playerStats;
   final String summonerName;
+  static final ColorPalette colorPalette = ColorPalette();
 
   const MatchDetailsPage(
       {super.key, required this.playerStats, required this.summonerName});
   @override
+
+  /// This widget builds the match details view using a TabView to display
+  /// information about kills, gold, damage dealt, damage taken, wards and CS.
+  /// It takes in a [BuildContext] and a [List] of [PlayerStats] objects.
   Widget build(BuildContext context) {
+    // Create a copy of the player stats list.
+    final playerStatsCopy = List<PlayerStats>.from(playerStats);
+
+    // Build the match details view with a DefaultTabController and a Scaffold.
     return DefaultTabController(
       length: 6,
       child: Scaffold(
+        // Set the AppBar with a title and tabs.
         appBar: AppBar(
-          iconTheme: IconThemeData(color: ColorPalette().secondary),
-          backgroundColor: ColorPalette().primary,
+          iconTheme: IconThemeData(
+            color: colorPalette.secondary,
+          ),
+          backgroundColor: colorPalette.primary,
           title: Text(
             'Match Details',
-            style: TextStyle(color: ColorPalette().secondary),
+            style: TextStyle(
+              color: colorPalette.secondary,
+            ),
           ),
           bottom: TabBar(
-            indicatorColor: ColorPalette().secondary,
+            // Set the tab labels and style.
+            indicatorColor: colorPalette.secondary,
             isScrollable: true,
-            tabs: [
-              Tab(text: 'Kills'),
-              Tab(text: 'Gold'),
-              Tab(text: 'Damage Dealt'),
-              Tab(text: 'Damage Taken'),
-              Tab(text: 'Wards'),
-              Tab(text: 'CS'),
+            tabs: const [
+              Tab(
+                text: 'Kills',
+              ),
+              Tab(
+                text: 'Gold',
+              ),
+              Tab(
+                text: 'Damage Dealt',
+              ),
+              Tab(
+                text: 'Damage Taken',
+              ),
+              Tab(
+                text: 'Wards',
+              ),
+              Tab(
+                text: 'CS',
+              ),
             ],
           ),
         ),
+        // Set the body with a Column and an Expanded TabBarView.
         body: Column(
           children: [
             Expanded(
               child: TabBarView(
                 children: [
+                  // Use the _buildTabContent() method to build each tab.
                   _buildTabContent(
-                      'kills',
-                      orderByProperty(
-                          List<PlayerStats>.from(playerStats), "kills")),
+                    'kills',
+                    orderByProperty(
+                        List<PlayerStats>.from(playerStats), "kills"),
+                  ),
                   _buildTabContent(
-                      'gold',
-                      orderByProperty(
-                          List<PlayerStats>.from(playerStats), "gold")),
+                    'gold',
+                    orderByProperty(
+                        List<PlayerStats>.from(playerStats), "gold"),
+                  ),
                   _buildTabContent(
-                      'damageDealt',
-                      orderByProperty(List<PlayerStats>.from(playerStats),
-                          "totalDamageDealtToChampions")),
+                    'damageDealt',
+                    orderByProperty(List<PlayerStats>.from(playerStats),
+                        "totalDamageDealtToChampions"),
+                  ),
                   _buildTabContent(
-                      'damageTaken',
-                      orderByProperty(List<PlayerStats>.from(playerStats),
-                          "totalDamageTaken")),
+                    'damageTaken',
+                    orderByProperty(List<PlayerStats>.from(playerStats),
+                        "totalDamageTaken"),
+                  ),
                   _buildTabContent(
-                      'wards',
-                      orderByProperty(
-                          List<PlayerStats>.from(playerStats), "wardsPlaced")),
+                    'wards',
+                    orderByProperty(
+                        List<PlayerStats>.from(playerStats), "wardsPlaced"),
+                  ),
                   _buildTabContent(
                       'cs',
                       orderByProperty(
@@ -73,8 +107,10 @@ class MatchDetailsPage extends StatelessWidget {
     );
   }
 
+  /// This method builds the content of a tab in the UI, given a category and a list of player stats.
   Widget _buildTabContent(
       String category, List<PlayerStats> sortedPlayerStats) {
+    // This map defines how to extract the value for a given category from a PlayerStats object.
     final categoryPropertyMap = {
       'kills': (stats) => stats.kills,
       'gold': (stats) => stats.goldEarned,
@@ -123,13 +159,11 @@ class MatchDetailsPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: Colors.blue,
-                    //if you summoner is the summoner that you select earlier
                     width: sortedPlayerStats[playerStatsIndex].summonerName ==
                             summonerName
                         ? 3
                         : 0,
                   ),
-                  //champion icon
                   image: DecorationImage(
                     image: AssetImage(
                         "assets/champions/${sortedPlayerStats[playerStatsIndex].championName}.png"),
@@ -163,7 +197,7 @@ class MatchDetailsPage extends StatelessWidget {
     );
   }
 
-  // This function builds a widget that displays a comparison between two teams based on a given category
+  /// This function builds a widget that displays a comparison between two teams based on a given category
   Widget _buildTeamComparisonWidget(
       String category, List<PlayerStats> sortedPlayerStats) {
     // Initialize team data to 0
@@ -180,7 +214,7 @@ class MatchDetailsPage extends StatelessWidget {
       // Set the container color
       color: Colors.grey[200],
       // Set the container padding
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       // Build the column widget that displays the team data
       child: Column(
         children: [
@@ -211,7 +245,7 @@ class MatchDetailsPage extends StatelessWidget {
     );
   }
 
-  // Widget to display team data
+  /// Widget to display team data
   Widget _buildTeamDataWidget(String teamName, int data, Color color) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -233,10 +267,15 @@ class MatchDetailsPage extends StatelessWidget {
     );
   }
 
+  /// This function takes in a list of PlayerStats objects and a string property
+  /// It sorts the list of PlayerStats objects based on the provided property
+  /// It then returns the sorted list of PlayerStats objects
   List<PlayerStats> orderByProperty(
       List<PlayerStats> playerStatsList, String property) {
     switch (property) {
       // Sort the list by the provided property using a descending order
+      // For each case, the list is sorted based on the specified property
+      // using a descending order by using the compareTo() method
       case "gold":
         playerStatsList.sort((a, b) => b.goldEarned.compareTo(a.goldEarned));
         break;
@@ -258,14 +297,17 @@ class MatchDetailsPage extends StatelessWidget {
         playerStatsList.sort((a, b) => b.totalCS.compareTo(a.totalCS));
         break;
       // If an invalid property is provided, sort by gold by default
+      // For the default case, the list is sorted based on the goldEarned property
+      // using a descending order
       default:
         playerStatsList.sort((a, b) => b.goldEarned.compareTo(a.goldEarned));
     }
 
-// Return the sorted list
+    // Return the sorted list
     return playerStatsList;
   }
 
+  /// This function takes a PlayerStats object and a category as input and returns the value of the corresponding category for that player.
   int _getData(PlayerStats stats, String category) {
     switch (category) {
       case 'kills':
@@ -285,41 +327,50 @@ class MatchDetailsPage extends StatelessWidget {
     }
   }
 
+  /// This function takes a category and a sorted list of PlayerStats objects as input and returns a Tuple2<int, int> object with the sums of the specified category for each team (winning and losing).
   Tuple2<int, int> _getTeamData(
       String category, List<PlayerStats> sortedPlayerStats) {
+    // Split the list of PlayerStats into two lists, one for the winning team and one for the losing team.
     var winTeam = sortedPlayerStats.where((stats) => stats.win).toList();
     var loseTeam = sortedPlayerStats.where((stats) => !stats.win).toList();
 
     switch (category) {
       case 'kills':
+        // Return a tuple with the sum of kills for the winning team and the sum of kills for the losing team.
         return Tuple2(
             PlayerStats.sumByProperty(winTeam, (stats) => stats.kills),
             PlayerStats.sumByProperty(loseTeam, (stats) => stats.kills));
       case 'gold':
+        // Return a tuple with the sum of gold earned for the winning team and the sum of gold earned for the losing team.
         return Tuple2(
             PlayerStats.sumByProperty(winTeam, (stats) => stats.goldEarned),
             PlayerStats.sumByProperty(loseTeam, (stats) => stats.goldEarned));
       case 'damageDealt':
+        // Return a tuple with the sum of damage dealt to champions for the winning team and the sum of damage dealt to champions for the losing team.
         return Tuple2(
             PlayerStats.sumByProperty(
                 winTeam, (stats) => stats.totalDamageDealtToChampions),
             PlayerStats.sumByProperty(
                 loseTeam, (stats) => stats.totalDamageDealtToChampions));
       case 'damageTaken':
+        // Return a tuple with the sum of damage taken for the winning team and the sum of damage taken for the losing team.
         return Tuple2(
             PlayerStats.sumByProperty(
                 winTeam, (stats) => stats.totalDamageTaken),
             PlayerStats.sumByProperty(
                 loseTeam, (stats) => stats.totalDamageTaken));
       case 'wards':
+        // Return a tuple with the sum of wards placed for the winning team and the sum of wards placed for the losing team.
         return Tuple2(
             PlayerStats.sumByProperty(winTeam, (stats) => stats.wardsPlaced),
             PlayerStats.sumByProperty(loseTeam, (stats) => stats.wardsPlaced));
       case 'cs':
+        // Return a tuple with the sum of CS for the winning team and the sum of CS for the losing team.
         return Tuple2(
             PlayerStats.sumByProperty(winTeam, (stats) => stats.totalCS),
             PlayerStats.sumByProperty(loseTeam, (stats) => stats.totalCS));
       default:
+        // If an invalid category is provided, return a tuple with 0 for both sums.
         return const Tuple2(0, 0);
     }
   }
