@@ -5,7 +5,7 @@ import 'package:flutter_riot_api/utils/loldata_string.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riot_api/utils/config.dart';
 
-// Returns a MatchPreview object containing information about the specified match
+/// Returns a MatchPreview object containing information about the specified match
 Future<MatchPreview?> getMatchPreview(String summonerName, String matchId,
     [String? serverId]) async {
   String apiUrl =
@@ -64,7 +64,6 @@ Future<List<String>> getMatchIds(String puuid, [String? serverId]) async {
 }
 
 Future<LiveGame?> getLiveGame(String summonerId, [String? serverId]) async {
-  final response;
   String apiUrl =
       '${Config.apiUrl}spectator/v4/active-games/by-summoner/$summonerId/?api_key=${Config.apikey}';
   if (serverId != null) {
@@ -77,7 +76,7 @@ Future<LiveGame?> getLiveGame(String summonerId, [String? serverId]) async {
 
   if (liveGameResponse.statusCode == 200) {
     // If the request was successful
-    response = jsonDecode(liveGameResponse.body);
+    dynamic response = jsonDecode(liveGameResponse.body);
     final liveGameObjresponse = LiveGame.fromJson(response);
     return liveGameObjresponse;
   } else {

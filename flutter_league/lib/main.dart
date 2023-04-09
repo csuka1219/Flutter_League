@@ -9,7 +9,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => HomeProvider()),
       ],
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }
@@ -23,8 +23,6 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => HomeScreen(),
-        //'/details': (context) => SummonerDetailsPage()
-        //'/second': (context) => SecondScreen(),
       },
     );
   }

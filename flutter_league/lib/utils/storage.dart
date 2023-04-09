@@ -1,6 +1,4 @@
 import 'dart:convert';
-
-import 'package:flutter_riot_api/model/summoner.dart';
 import 'package:flutter_riot_api/model/summoner_server.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

@@ -17,9 +17,6 @@ class MatchDetailsPage extends StatelessWidget {
   /// information about kills, gold, damage dealt, damage taken, wards and CS.
   /// It takes in a [BuildContext] and a [List] of [PlayerStats] objects.
   Widget build(BuildContext context) {
-    // Create a copy of the player stats list.
-    final playerStatsCopy = List<PlayerStats>.from(playerStats);
-
     // Build the match details view with a DefaultTabController and a Scaffold.
     return DefaultTabController(
       length: 6,

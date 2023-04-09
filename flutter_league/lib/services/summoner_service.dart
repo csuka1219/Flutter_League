@@ -101,7 +101,7 @@ Map<String, dynamic> mergeJson(
     Map<String, dynamic> summonerData, List<dynamic> rankedData) {
   Map<String, dynamic> rankedInfo = {};
   if (rankedData.isNotEmpty) {
-    rankedData.forEach((data) {
+    for (var data in rankedData) {
       // Extract the ranked data from the list and add it to the rankedInfo Map.
       rankedInfo[data['queueType']] = {
         'tier': data['tier'],
@@ -110,7 +110,7 @@ Map<String, dynamic> mergeJson(
         'wins': data['wins'],
         'losses': data['losses']
       };
-    });
+    }
   }
 
   // Merge the Summoner and Ranked data into a single JSON object.

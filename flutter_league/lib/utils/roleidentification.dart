@@ -52,15 +52,6 @@ double calculateConfidence(double bestMetric, double secondBestMetric) {
 List<dynamic> getPositions(
     Map<String, Map<String, double>> championPositions, List<int> composition,
     {int? top, int? jungle, int? middle, int? bottom, int? utility}) {
-// Check the types in composition and the other input types
-  if (composition.any((element) => element is! int)) {
-    throw ArgumentError('The composition must be a list of champion IDs.');
-  }
-  if ([top, jungle, middle, bottom, utility]
-      .any((element) => element != null && element is! int)) {
-    throw ArgumentError('The composition must be a list of champion IDs.');
-  }
-
   if (top != null &&
       jungle != null &&
       middle != null &&

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
-import 'package:flutter_riot_api/model/match.dart';
 import 'package:flutter_riot_api/model/match_preview.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
 import 'package:flutter_riot_api/providers/matchhistory_provider.dart';
 import 'package:flutter_riot_api/screens/match_info.dart';
-import 'package:flutter_riot_api/services/matchinfo_service.dart';
-import 'package:flutter_riot_api/services/summoner_service.dart';
 
 class MatchItem extends StatelessWidget {
   final MatchPreview matchHistory;
@@ -26,16 +23,16 @@ class MatchItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () async {
-        ///TODO null check
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => MatchInfoPage(
-                    summonerName: summonerInfo.name,
-                    isWin: matchHistory.playerStats.win,
-                    matchId: matchHistory.matchId,
-                    serverId: serverId,
-                  )),
+            builder: (context) => MatchInfoPage(
+              summonerName: summonerInfo.name,
+              isWin: matchHistory.playerStats.win,
+              matchId: matchHistory.matchId,
+              serverId: serverId,
+            ),
+          ),
         );
       },
       child: Padding(
@@ -44,18 +41,18 @@ class MatchItem extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             color: matchHistory.playerStats.win
-                ? Color.fromARGB(255, 190, 226, 255)
-                : Color.fromARGB(255, 255, 116, 116),
+                ? const Color.fromARGB(255, 190, 226, 255)
+                : const Color.fromARGB(255, 255, 116, 116),
           ),
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Champion icon
               _buildChampIcon(),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               _buildMatchDetails(),
-              Spacer(),
+              const Spacer(),
               // Rune pages
               _buildRunePages(),
             ],
@@ -82,7 +79,7 @@ class MatchItem extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Container(
           width: 28,
           height: 28,
@@ -106,19 +103,19 @@ class MatchItem extends StatelessWidget {
         Row(
           children: [
             Text(
-              "${getGameModeByQueueId(matchHistory.queueId)}",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              getGameModeByQueueId(matchHistory.queueId),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
             Text(
               " - ${getFormattedDuration(matchHistory.gameDuration)}",
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
               ),
             ),
             Icon(Icons.schedule, color: Colors.grey[600], size: 14.0),
           ],
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         // KDA
         Row(
           children: [
@@ -138,7 +135,7 @@ class MatchItem extends StatelessWidget {
             SizedBox(width: matchHistory.playerStats.role.isNotEmpty ? 4 : 0),
             Text(
               "${matchHistory.playerStats.kills} / ",
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.black,
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
@@ -146,7 +143,7 @@ class MatchItem extends StatelessWidget {
             ),
             Text(
               "${matchHistory.playerStats.deaths}",
-              style: TextStyle(
+              style: const TextStyle(
                 color: Color.fromARGB(255, 198, 24, 65),
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
@@ -154,24 +151,24 @@ class MatchItem extends StatelessWidget {
             ),
             Text(
               " / ${matchHistory.playerStats.assists}",
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.black,
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(
+            const SizedBox(
               width: 5,
             ),
             Text(
-              "${matchHistory.playerStats.totalCS}" + " CS",
-              style: TextStyle(
+              "${matchHistory.playerStats.totalCS} CS",
+              style: const TextStyle(
                 color: Color.fromARGB(255, 94, 94, 94),
               ),
             ),
           ],
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         // Match items
         Row(
           children: [
@@ -232,7 +229,7 @@ class MatchItem extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         // Summoner spells
         Row(
           children: [
@@ -248,7 +245,7 @@ class MatchItem extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(width: 4),
+            const SizedBox(width: 4),
             Container(
               width: 24,
               height: 24,

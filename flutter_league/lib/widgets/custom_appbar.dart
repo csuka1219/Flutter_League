@@ -1,18 +1,17 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
-import 'package:flutter_riot_api/providers/customappbar_provider.dart';
 import 'package:flutter_riot_api/providers/home_provider.dart';
 import 'package:provider/provider.dart';
 
 class CustomAppBar extends StatelessWidget {
   final Function onPressed;
 
-  CustomAppBar({Key? key, required this.onPressed}) : super(key: key);
+  const CustomAppBar({Key? key, required this.onPressed}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 65.0,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -38,7 +37,7 @@ class CustomAppBar extends StatelessWidget {
                     onPressed();
                   },
                   child: Container(
-                    padding: EdgeInsets.all(7.0),
+                    padding: const EdgeInsets.all(7.0),
                     height: 42.0,
                     width: 84.0,
                     decoration: BoxDecoration(
@@ -52,7 +51,7 @@ class CustomAppBar extends StatelessWidget {
                           // Consume the MatchHistoryData from the widget tree
                           builder: (context, customAppBarData, child) {
                             if (customAppBarData.serverName == null) {
-                              return Text(
+                              return const Text(
                                 "-",
                                 style: TextStyle(
                                   fontSize: 15,
@@ -62,22 +61,22 @@ class CustomAppBar extends StatelessWidget {
                             }
                             return Text(
                               customAppBarData.serverName!,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: 15,
                                   color: Color.fromARGB(255, 44, 62, 80)),
                             );
                           },
                         ),
-                        Spacer(),
+                        const Spacer(),
                         Transform.rotate(
                           angle: 90 * pi / 180, // 90 degrees in radians
-                          child: Icon(
+                          child: const Icon(
                             Icons.arrow_forward_ios,
                             size: 15,
                             color: Color.fromARGB(255, 44, 62, 80),
                           ),
                         ),
-                        Spacer()
+                        const Spacer()
                       ],
                     ),
                   ),
