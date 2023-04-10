@@ -63,28 +63,34 @@ class MatchHistoryData with ChangeNotifier {
     _matches = await getMatchIds(puuid, serverId);
   }
 
-  // Fetches the match data for the user.
+// Fetches the match data for the user.
   Future<void> fetchData(String puuid, String summonerName,
       [bool loadMore = false, bool loadNew = false, String? serverId]) async {
     if (loadMore) {
       isLoading = true;
     }
     if (loadNew) {
+      // If loading new data, set isInitialLoading to true, fetch new match IDs, and clear existing match history.
       _isInitialLoading = true;
       await fetchMatchIds(puuid, serverId);
       _matchHistory.clear();
     }
+    // Create an empty list to store the loaded match data.
     final List<MatchPreview?> loadedData = [];
     if (_matches.isEmpty) {
+      // If there are no match IDs, set isInitialLoading to false and return.
       isInitialLoading = false;
       return;
     }
+    // Load match previews for up to 10 matches or until the end of the match list.
     int i = _matchNumber;
     while (i < _matchNumber + 10 && i < _matches.length) {
+      // Get the match preview for the current match ID and add it to the loadedData list.
       loadedData
           .add(await getMatchPreview(summonerName, _matches[i], serverId));
       i++;
     }
+    // Update the match number and add the loaded data to the match history.
     _matchNumber = i;
     _matchHistory += loadedData;
     if (loadMore) {
