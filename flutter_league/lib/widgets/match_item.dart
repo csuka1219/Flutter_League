@@ -22,6 +22,7 @@ class MatchItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      // When the user taps on this widget, navigate to the MatchInfoPage and pass along some parameters
       onTap: () async {
         Navigator.push(
           context,
@@ -38,6 +39,7 @@ class MatchItem extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Container(
+          // The container has a rounded border and a background color depending on the match result
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             color: matchHistory.playerStats.win
@@ -48,12 +50,13 @@ class MatchItem extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Champion icon
+              // Display the champion icon
               _buildChampIcon(),
               const SizedBox(width: 16),
+              // Display the match details
               _buildMatchDetails(),
               const Spacer(),
-              // Rune pages
+              // Display the rune pages used in this match
               _buildRunePages(),
             ],
           ),
@@ -103,114 +106,126 @@ class MatchItem extends StatelessWidget {
         Row(
           children: [
             Text(
-              getGameModeByQueueId(matchHistory.queueId),
+              getGameModeByQueueId(matchHistory
+                  .queueId), // Display game mode based on the queue ID of the match
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
             Text(
-              " - ${getFormattedDuration(matchHistory.gameDuration)}",
+              " - ${getFormattedDuration(matchHistory.gameDuration)}", // Display formatted duration of the match
               style: const TextStyle(
                 fontSize: 14,
               ),
             ),
-            Icon(Icons.schedule, color: Colors.grey[600], size: 14.0),
+            Icon(Icons.schedule,
+                color: Colors.grey[600],
+                size: 14.0), // Display a clock icon to represent match duration
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 8), // Add a small vertical spacing
         // KDA
-        Row(
-          children: [
-            matchHistory.playerStats.role.isNotEmpty
+        _buildPlayerStats(), // Display player's kill, death and assists (KDA) in a separate widget
+        const SizedBox(height: 8), // Add a small vertical spacing
+        // Match items
+        _buildPlayerItems(), // Display the player's items in a separate widget
+      ],
+    );
+  }
+
+  Row _buildPlayerItems() {
+    return Row(
+      children: [
+        // Loop through each item the player had
+        for (var i = 0; i < matchHistory.playerStats.items.length - 1; i++)
+          Padding(
+            padding: const EdgeInsets.only(right: 2.0),
+            child: matchHistory.playerStats.items[i] != 0
+                // If the item is not a default empty item slot, display the item icon
                 ? Container(
-                    width: 20.0,
-                    height: 20.0,
+                    width: 25.0,
+                    height: 25.0,
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
+                      borderRadius: BorderRadius.circular(10),
                       image: DecorationImage(
                         image: AssetImage(
-                            "assets/roles/${matchHistory.playerStats.role}.png"),
+                            "assets/items/${matchHistory.playerStats.items[i]}.png"),
                       ),
                     ),
                   )
-                : Container(),
-            SizedBox(width: matchHistory.playerStats.role.isNotEmpty ? 4 : 0),
-            Text(
-              "${matchHistory.playerStats.kills} / ",
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              "${matchHistory.playerStats.deaths}",
-              style: const TextStyle(
-                color: Color.fromARGB(255, 198, 24, 65),
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              " / ${matchHistory.playerStats.assists}",
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(
-              width: 5,
-            ),
-            Text(
-              "${matchHistory.playerStats.totalCS} CS",
-              style: const TextStyle(
-                color: Color.fromARGB(255, 94, 94, 94),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        // Match items
-        Row(
-          children: [
-            for (var i = 0; i < matchHistory.playerStats.items.length - 1; i++)
-              Padding(
-                padding: const EdgeInsets.only(right: 2.0),
-                child: matchHistory.playerStats.items[i] != 0
-                    ? Container(
-                        width: 25.0,
-                        height: 25.0,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          image: DecorationImage(
-                            image: AssetImage(
-                                "assets/items/${matchHistory.playerStats.items[i]}.png"),
-                          ),
-                        ),
-                      )
-                    : Container(
-                        width: 25.0,
-                        height: 25.0,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: ColorPalette().primary),
-                      ),
-              ),
-            Container(
-              width: 25.0,
-              height: 25.0,
-              decoration: matchHistory.playerStats.item6 != 0
-                  ? BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        image: AssetImage(
-                            "assets/items/${matchHistory.playerStats.item6}.png"),
-                      ),
-                    )
-                  : const BoxDecoration(),
-            ),
-          ],
+                // If the item is a default empty item slot, display a blank circle
+                : Container(
+                    width: 25.0,
+                    height: 25.0,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: ColorPalette().primary),
+                  ),
+          ),
+        // Display the ward separately since it has a different position in the item list
+        Container(
+          width: 25.0,
+          height: 25.0,
+          decoration: matchHistory.playerStats.item6 != 0
+              // If the ward is not a default empty item slot, display the item icon
+              ? BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: AssetImage(
+                        "assets/items/${matchHistory.playerStats.item6}.png"),
+                  ),
+                )
+              // If the ward is a default empty item slot, display nothing
+              : const BoxDecoration(),
         ),
       ],
+    );
+  }
+
+  Row _buildPlayerStats() {
+    return Row(
+      children: [
+        // Player role icon
+        matchHistory.playerStats.role.isNotEmpty
+            ? Container(
+                width: 20.0,
+                height: 20.0,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: AssetImage(
+                        "assets/roles/${matchHistory.playerStats.role}.png"),
+                  ),
+                ),
+              )
+            : Container(),
+        // Spacing after player role icon
+        SizedBox(width: matchHistory.playerStats.role.isNotEmpty ? 4 : 0),
+        // Player KDA text with color
+        _buildKDAText("${matchHistory.playerStats.kills} / ", Colors.black),
+        _buildKDAText("${matchHistory.playerStats.deaths}",
+            const Color.fromARGB(255, 198, 24, 65)),
+        _buildKDAText(" / ${matchHistory.playerStats.assists}", Colors.black),
+        const SizedBox(
+          width: 5,
+        ),
+        // Player total CS text
+        Text(
+          "${matchHistory.playerStats.totalCS} CS",
+          style: const TextStyle(
+            color: Color.fromARGB(255, 94, 94, 94),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Text _buildKDAText(String text, Color color) {
+    return Text(
+      "$text / ",
+      style: TextStyle(
+        color: color,
+        fontSize: 16.0,
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 
@@ -233,34 +248,27 @@ class MatchItem extends StatelessWidget {
         // Summoner spells
         Row(
           children: [
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6),
-                image: DecorationImage(
-                  image: AssetImage(
-                    "assets/spells/${matchHistory.playerStats.summoner1Id}.png",
-                  ),
-                ),
-              ),
-            ),
+            _buildSummonerSpell(matchHistory.playerStats.summoner1Id),
             const SizedBox(width: 4),
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6),
-                image: DecorationImage(
-                  image: AssetImage(
-                    "assets/spells/${matchHistory.playerStats.summoner2Id}.png",
-                  ),
-                ),
-              ),
-            ),
+            _buildSummonerSpell(matchHistory.playerStats.summoner2Id)
           ],
         ),
       ],
+    );
+  }
+
+  Container _buildSummonerSpell(int summonerid) {
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        image: DecorationImage(
+          image: AssetImage(
+            "assets/spells/$summonerid.png",
+          ),
+        ),
+      ),
     );
   }
 

@@ -5,7 +5,7 @@ import 'package:flutter_riot_api/providers/home_provider.dart';
 import 'package:flutter_riot_api/screens/match_history.dart';
 import 'package:flutter_riot_api/services/summoner_service.dart';
 import 'package:flutter_riot_api/utils/config.dart';
-import 'package:flutter_riot_api/utils/loldata_string.dart';
+import 'package:flutter_riot_api/utils/riotdata_formatter.dart';
 import 'package:flutter_riot_api/widgets/summoner_info.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_riot_api/widgets/custom_appbar.dart';
@@ -362,8 +362,8 @@ class HomeScreen extends StatelessWidget {
       child: InkWell(
         // When the user taps on an option, set the dropdown to be closed
         onTap: () async {
-          Config.currentServer = option;
           saveServerId(option);
+          Config.currentServer = option;
           context.read<HomeProvider>().serverName = option;
           context.read<HomeProvider>().setFalse();
         },

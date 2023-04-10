@@ -6,7 +6,7 @@ import 'package:flutter_riot_api/providers/home_provider.dart';
 import 'package:flutter_riot_api/providers/matchhistoryappbar_provider.dart';
 import 'package:flutter_riot_api/screens/live_match.dart';
 import 'package:flutter_riot_api/utils/config.dart';
-import 'package:flutter_riot_api/utils/loldata_string.dart';
+import 'package:flutter_riot_api/utils/riotdata_formatter.dart';
 import 'package:flutter_riot_api/utils/sortby_role.dart';
 import 'package:flutter_riot_api/widgets/match_item.dart';
 import 'package:provider/provider.dart';

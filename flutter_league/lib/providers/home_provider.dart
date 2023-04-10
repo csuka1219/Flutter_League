@@ -3,7 +3,7 @@ import 'package:flutter_riot_api/model/summoner.dart';
 import 'package:flutter_riot_api/model/summoner_server.dart';
 import 'package:flutter_riot_api/services/summoner_service.dart';
 import 'package:flutter_riot_api/utils/config.dart';
-import 'package:flutter_riot_api/utils/loldata_string.dart';
+import 'package:flutter_riot_api/utils/riotdata_formatter.dart';
 import 'package:flutter_riot_api/utils/storage.dart';
 
 class HomeProvider with ChangeNotifier {

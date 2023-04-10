@@ -8,7 +8,7 @@ import 'package:flutter_riot_api/model/team_header.dart';
 import 'package:flutter_riot_api/providers/matchinfo_provider.dart';
 import 'package:flutter_riot_api/screens/match_details.dart';
 import 'package:flutter_riot_api/screens/match_history.dart';
-import 'package:flutter_riot_api/utils/loldata_string.dart';
+import 'package:flutter_riot_api/utils/riotdata_formatter.dart';
 import 'package:flutter_riot_api/widgets/rankicon.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';

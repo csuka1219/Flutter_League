@@ -4,8 +4,7 @@ import 'package:flutter_riot_api/model/live_game.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
 import 'package:flutter_riot_api/model/summoner_server.dart';
 import 'package:flutter_riot_api/screens/match_history.dart';
-import 'package:flutter_riot_api/utils/getchampionname.dart';
-import 'package:flutter_riot_api/utils/loldata_string.dart';
+import 'package:flutter_riot_api/utils/riotdata_formatter.dart';
 import 'package:flutter_riot_api/utils/storage.dart';
 
 class PlayerVersusCard extends StatelessWidget {

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_riot_api/model/match.dart';
-import 'package:flutter_riot_api/utils/loldata_string.dart';
+import 'package:flutter_riot_api/utils/riotdata_formatter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riot_api/utils/config.dart';
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riot_api/color_palette.dart';
 import 'package:flutter_riot_api/model/live_game.dart';
 import 'package:flutter_riot_api/providers/livegame_provider.dart';
-import 'package:flutter_riot_api/utils/loldata_string.dart';
+import 'package:flutter_riot_api/utils/riotdata_formatter.dart';
 import 'package:flutter_riot_api/widgets/player_versus_card.dart';
 import 'package:provider/provider.dart';
 
