@@ -81,7 +81,7 @@ class HomeProvider with ChangeNotifier {
   String? get serverName => _serverName;
 
   set serverName(String? serverId) {
-    _serverName = getServerName(serverId!);
+    _serverName = getServerShortName(serverId!);
     _serverId = serverId;
     notifyListeners();
   }

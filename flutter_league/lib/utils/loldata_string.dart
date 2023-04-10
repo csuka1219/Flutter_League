@@ -126,10 +126,33 @@ String getRegionFromServerId(String serverId) {
 }
 
 String getServerName(String serverId) {
-  return serverNames[serverId]!;
+  return servers[serverId]!;
 }
 
-Map<String, String> serverNames = {
+String getServerShortName(String serverId) {
+  return serverShortNames[serverId]!;
+}
+
+final Map<String, String> servers = {
+  "eun1": "Europe Nordic & East",
+  "euw1": "Europe West",
+  "jp1": "Japan",
+  "br1": "Brazil",
+  "kr": "Korea",
+  "la1": "Latin America North",
+  "la2": "Latin America South",
+  "na1": "North America",
+  "oc1": "Oceania",
+  "ph2": "Philippines",
+  "ru": "Russia",
+  "sg2": "Singapore",
+  "th2": "Thailand",
+  "tr1": "Turkey",
+  "tw2": "Taiwan",
+  "vn2": "Vietnam",
+};
+
+Map<String, String> serverShortNames = {
   'br1': 'BR',
   'eun1': 'EUNE',
   'euw1': 'EUW',
@@ -139,6 +162,11 @@ Map<String, String> serverNames = {
   'la2': 'LAS',
   'na1': 'NA',
   'oc1': 'OCE',
-  'tr1': 'TR',
+  'ph1': 'PH',
   'ru': 'RU',
+  'sg': 'SG',
+  'th': 'TH',
+  'tr1': 'TR',
+  'tw': 'TW',
+  'vn': 'VN',
 };

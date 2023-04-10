@@ -5,6 +5,7 @@ import 'package:flutter_riot_api/providers/home_provider.dart';
 import 'package:flutter_riot_api/screens/match_history.dart';
 import 'package:flutter_riot_api/services/summoner_service.dart';
 import 'package:flutter_riot_api/utils/config.dart';
+import 'package:flutter_riot_api/utils/loldata_string.dart';
 import 'package:flutter_riot_api/widgets/summoner_info.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_riot_api/widgets/custom_appbar.dart';
@@ -92,11 +93,24 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           // Build the dropdown menu using the _buildDropDownMenu() method
+          IgnorePointer(
+            ignoring: !context.watch<HomeProvider>().dropdownOpen,
+            child: InkWell(
+              onTap: () => {
+                // Check if the dropdown menu is open
+                // If it is, close it. Otherwise, do nothing.
+                context.read<HomeProvider>().dropdownOpen
+                    ? context.read<HomeProvider>().setFalse()
+                    : null
+              },
+              splashFactory: NoSplash.splashFactory,
+              highlightColor: Colors.transparent,
+              child: Container(
+                height: double.infinity,
+              ),
+            ),
+          ),
           _buildDropDownMenu(context, height),
-          // Add an empty container to ensure the Stack fills the available space
-          Container(
-            height: double.infinity,
-          )
         ],
       ),
     );
@@ -358,7 +372,7 @@ class HomeScreen extends StatelessWidget {
             // Display the option text as the title of the list item
             ListTile(
               title: Text(
-                option,
+                getServerName(option),
                 textAlign: TextAlign.center,
               ),
             ),
