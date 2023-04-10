@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-// Define a function to asynchronously pull champion playrates data from an API
+/// Define a function to asynchronously pull champion playrates data from an API
 Future<Map<String, Map<String, double>>> pullData() async {
   // Send a GET request to the specified URL
   final response = await http.get(Uri.parse(

@@ -3,10 +3,10 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_riot_api/model/summoner.dart';
 import 'package:flutter_riot_api/utils/config.dart';
 
-// This function retrieves the Summoner object associated with the given Summoner Name.
-// If a Summoner is found, it also retrieves the Summoner's ranked data, and merges
-// the Summoner and Ranked data into a single JSON object. If a Summoner is not found,
-// null is returned.
+/// This function retrieves the Summoner object associated with the given Summoner Name.
+/// If a Summoner is found, it also retrieves the Summoner's ranked data, and merges
+/// the Summoner and Ranked data into a single JSON object. If a Summoner is not found,
+/// null is returned.
 Future<Summoner?> getSummonerByName(String summonerName,
     [String? serverId]) async {
   String apiUrl =
@@ -36,10 +36,10 @@ Future<Summoner?> getSummonerByName(String summonerName,
   }
 }
 
-// This function retrieves the Summoner object associated with the given Summoner Puuid.
-// If a Summoner is found, it also retrieves the Summoner's ranked data, and merges
-// the Summoner and Ranked data into a single JSON object. If a Summoner is not found,
-// null is returned.
+/// This function retrieves the Summoner object associated with the given Summoner Puuid.
+/// If a Summoner is found, it also retrieves the Summoner's ranked data, and merges
+/// the Summoner and Ranked data into a single JSON object. If a Summoner is not found,
+/// null is returned.
 Future<Summoner?> getSummonerByPuuid(String puuid, [String? serverId]) async {
   String apiUrl =
       '${Config.apiUrl}summoner/v4/summoners/by-puuid/$puuid?api_key=${Config.apikey}';
@@ -68,9 +68,9 @@ Future<Summoner?> getSummonerByPuuid(String puuid, [String? serverId]) async {
   }
 }
 
-// This function retrieves the ranked data associated with the given Account ID.
-// If ranked data is found, it is returned as a List<dynamic>. If ranked data is not
-// found, a single JSON object with a 'result' key of 'Unranked' is returned.
+/// This function retrieves the ranked data associated with the given Account ID.
+/// If ranked data is found, it is returned as a List<dynamic>. If ranked data is not
+/// found, a single JSON object with a 'result' key of 'Unranked' is returned.
 Future<List<dynamic>> getRankedData(String accountId,
     [String? serverId]) async {
   String apiUrl =
@@ -95,8 +95,8 @@ Future<List<dynamic>> getRankedData(String accountId,
   ];
 }
 
-// This function merges two JSON objects into a single JSON object.
-// It is used to merge the Summoner and Ranked data into a single JSON object.
+/// This function merges two JSON objects into a single JSON object.
+/// It is used to merge the Summoner and Ranked data into a single JSON object.
 Map<String, dynamic> mergeJson(
     Map<String, dynamic> summonerData, List<dynamic> rankedData) {
   Map<String, dynamic> rankedInfo = {};

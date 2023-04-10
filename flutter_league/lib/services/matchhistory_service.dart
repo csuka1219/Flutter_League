@@ -36,7 +36,7 @@ Future<MatchPreview?> getMatchPreview(String summonerName, String matchId,
   }
 }
 
-// Returns a list of match IDs for a given summoner PUUID
+/// Returns a list of match IDs for a given summoner PUUID
 Future<List<String>> getMatchIds(String puuid, [String? serverId]) async {
   List<String> response = [];
 
@@ -64,23 +64,29 @@ Future<List<String>> getMatchIds(String puuid, [String? serverId]) async {
 }
 
 Future<LiveGame?> getLiveGame(String summonerId, [String? serverId]) async {
+  // construct the Riot API endpoint for fetching live game data for the summoner with the given ID
   String apiUrl =
       '${Config.apiUrl}spectator/v4/active-games/by-summoner/$summonerId/?api_key=${Config.apikey}';
+
+  // if a server ID is specified, replace the current server ID in the API endpoint with the specified ID
   if (serverId != null) {
     apiUrl = apiUrl.replaceFirst(Config.currentServer, serverId);
   }
+
+  // send a GET request to the Riot API to fetch live game data for the summoner
   final liveGameResponse = await http.get(
-    Uri.parse(
-        apiUrl), // Send a GET request to the Riot API to fetch live game data for the summoner
+    Uri.parse(apiUrl),
   );
 
   if (liveGameResponse.statusCode == 200) {
-    // If the request was successful
+    // if the request was successful, parse the JSON response and convert it to a LiveGame object
     dynamic response = jsonDecode(liveGameResponse.body);
     final liveGameObjresponse = LiveGame.fromJson(response);
     return liveGameObjresponse;
   } else {
+    // if the request failed, handle the error
     // TODO: handle error
   }
+
   return null;
 }
