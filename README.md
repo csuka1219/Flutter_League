@@ -1,7 +1,6 @@
 # Flutter League
 Flutter League is a companion app for League of Legends players that allows them to search for summoners, view their stats and match history, and check currently ongoing games.
 
-![Flutter League Logo](https://example.com/logo.png =250x)
 
 ## Pages
 The app consists of the following pages:
