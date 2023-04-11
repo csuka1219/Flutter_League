@@ -34,12 +34,12 @@ The app uses the following dependencies:
 
 Here are some screenshots of the app:
 
-![Home page](/screenshots/home.png)
-![Home page](/screenshots/home2.png)
-![Match history page](/screenshots/match_history.png)
-![Match info page](/screenshots/match_info.png)
-![Match details page](/screenshots/match_details.png)
-![Live game page](/screenshots/live_game.png)
+![Home page](flutter_league/screenshots/home.png)
+![Home page](flutter_league/screenshots/home2.png)
+![Match history page](flutter_league/screenshots/match_history.png)
+![Match info page](flutter_league/screenshots/match_info.png)
+![Match details page](flutter_league/screenshots/match_details.png)
+![Live game page](flutter_league/screenshots/live_game.png)
 
 ## License
 
