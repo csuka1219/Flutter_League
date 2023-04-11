@@ -9,7 +9,8 @@ The app consists of the following pages:
 ### Home Page
 The Home page is the first screen users see when they open the app. It displays information about the summoners that the user has saved as favorites. Users can select a League of Legends server and search for summoners.
 
-![Home Page](flutter_league/screenshots/home.png | width=250)
+<img src="flutter_league/screenshots/home.png" width="250">
+<img src="flutter_league/screenshots/home2.png" width="250">
 
 ### Match History Page
 The Match History Page displays a summoner's match history. It shows the summoner's rank, match history data, and provides the user with the option to load more matches.
@@ -20,17 +21,17 @@ The Match History Page displays a summoner's match history. It shows the summone
 ### Match Info Page
 The Match Info page displays the details of a specific match, including the result, player stats, and team compositions.
 
-![Match Info Page](flutter_league/screenshots/match_info.png =250x)
+<img src="flutter_league/screenshots/match_info.png" width="250">
 
 ### Match Details Page
 The Match Details page displays information about kills, gold, damage dealt, damage taken, wards, and CS in a TabView format.
 
-![Match Details Page](flutter_league/screenshots/match_details.png =250x)
+<img src="flutter_league/screenshots/match_details.png" width="250">
 
 ### Live Game Page
 The Live Game page displays information about a currently ongoing League of Legends game, including player information and match details. It uses the DartLeagueRoleIdentify algorithm, available on GitHub at https://github.com/csuka1219/DartLeagueRoleIdentify, to identify the role for each player in the game.
 
-![Live Game Page](flutter_league/screenshots/live_game.png =250x)
+<img src="flutter_league/screenshots/live_game.png" width="250">
 
 ## Getting Started
 To run the app, follow these steps:
