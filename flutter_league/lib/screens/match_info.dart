@@ -282,7 +282,7 @@ class MatchInfoPage extends StatelessWidget {
                     ),
                     image: DecorationImage(
                       image: AssetImage(
-                          "assets/champions/${playerStat.championName}.png"),
+                          "assets/champions/${getChampionNameById(playerStat.championId)}.png"),
                     ),
                   ),
                 ),

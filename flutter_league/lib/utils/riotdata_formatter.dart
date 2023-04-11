@@ -203,7 +203,7 @@ String getChampionNameById(int id) {
     case 22:
       return "Ashe";
     case 136:
-      return "Aurelion Sol";
+      return "AurelionSol";
     case 268:
       return "Azir";
     case 432:
@@ -223,7 +223,7 @@ String getChampionNameById(int id) {
     case 69:
       return "Cassiopeia";
     case 31:
-      return "Cho'Gath";
+      return "Chogath";
     case 42:
       return "Corki";
     case 122:
@@ -233,7 +233,7 @@ String getChampionNameById(int id) {
     case 119:
       return "Draven";
     case 36:
-      return "Dr. Mundo";
+      return "DrMundo";
     case 245:
       return "Ekko";
     case 60:
@@ -275,7 +275,7 @@ String getChampionNameById(int id) {
     case 40:
       return "Janna";
     case 59:
-      return "Jarvan IV";
+      return "JarvanIV";
     case 24:
       return "Jax";
     case 126:
@@ -303,7 +303,7 @@ String getChampionNameById(int id) {
     case 85:
       return "Kennen";
     case 121:
-      return "Kha'Zix";
+      return "Khazix";
     case 203:
       return "Kindred";
     case 240:
@@ -311,9 +311,9 @@ String getChampionNameById(int id) {
     case 96:
       return "Kog'Maw";
     case 897:
-      return "K'Sante";
+      return "KSante";
     case 7:
-      return "LeBlanc";
+      return "Leblanc";
     case 64:
       return "Lee Sin";
     case 89:
@@ -335,7 +335,7 @@ String getChampionNameById(int id) {
     case 57:
       return "Maokai";
     case 11:
-      return "Master Yi";
+      return "MasterYi";
     case 21:
       return "Miss Fortune";
     case 62:

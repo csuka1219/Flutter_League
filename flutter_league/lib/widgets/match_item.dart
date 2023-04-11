@@ -4,6 +4,7 @@ import 'package:flutter_riot_api/model/match_preview.dart';
 import 'package:flutter_riot_api/model/summoner.dart';
 import 'package:flutter_riot_api/providers/matchhistory_provider.dart';
 import 'package:flutter_riot_api/screens/match_info.dart';
+import 'package:flutter_riot_api/utils/riotdata_formatter.dart';
 
 class MatchItem extends StatelessWidget {
   final MatchPreview matchHistory;
@@ -239,7 +240,7 @@ class MatchItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             image: DecorationImage(
               image: AssetImage(
-                "assets/champions/${matchHistory.playerStats.championName}.png",
+                "assets/champions/${getChampionNameById(matchHistory.playerStats.championId)}.png",
               ),
             ),
           ),
