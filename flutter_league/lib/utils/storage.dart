@@ -57,7 +57,7 @@ Future<String?> getServerId() async {
   String? serverId = _prefs.getString('serverId');
 
   // if serverId is null, return an empty string
-  return serverId ?? "";
+  return serverId ?? "eun1";
 }
 
 /// delete a summoner's saved data from SharedPreferences

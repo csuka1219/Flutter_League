@@ -57,11 +57,13 @@ class HomeProvider with ChangeNotifier {
   Future<void> initSummoners() async {
     // Load summoner server data from the storage.
     summonerServers = await loadSummoners();
+    List<Summoner?> sums = [];
     // For each summoner server, get the corresponding summoner data.
     for (SummonerServer summonerServer in summonerServers) {
-      summoners.add(await getSummonerByPuuid(
+      sums.add(await getSummonerByPuuid(
           summonerServer.puuid, summonerServer.server));
     }
+    summoners = sums;
     // Once all summoner data has been loaded, set the isLoading flag to false and notify any listeners.
     isLoading = false;
     notifyListeners();
