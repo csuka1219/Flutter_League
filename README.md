@@ -39,7 +39,7 @@ To run the app, follow these steps:
 
 1. Clone the repository to your local machine.
 2. Open the project in your preferred IDE (e.g., Android Studio, VS Code).
-3. Create a Riot API key and add it to the lib/utils/constants.dart file. You can get a key by following the instructions here: https://developer.riotgames.com/docs/portal.
+3. Create a Riot API key and add it to the lib/utils/config.dart file. You can get a key by following the instructions here: https://developer.riotgames.com/docs/portal.
 4. Run the app in the emulator or on a physical device.
 
 ## Dependencies
