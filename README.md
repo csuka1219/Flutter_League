@@ -1,12 +1,14 @@
 # Flutter_League
 
-<intro>:
+This Flutter app is a League of Legends companion app that allows users to search for and save their favorite summoners, view their stats and match history, and check the currently ongoing game.
 
-- Home page: -
-- Match history page: -
-- Match info page: -
-- Match details page: d-
-- Live game page: -
+## features
+
+- Home page: The Home page is the first screen users see when they open the app. It displays information about the summoners that the user has saved as favorites. At here you can select League of Legends server and search for summoners.
+- Match history page: Match History Page is a Flutter page that displays a summoner's match history. It shows the summoner's rank, match history data and provides the user with the option to load more matches
+- Match info page: The Match Info page displays the details of a specific match, including the result, player stats, and team compositions.
+- Match details page: The Match Details page displays information about kills, gold, damage dealt, damage taken, wards, and CS in a TabView format. 
+- Live game page: The Live Game page displays information about a currently ongoing League of Legends game, including player information and match details. Is uses the DartLeagueRoleIdentify algorithm, available on GitHub at https://github.com/csuka1219/DartLeagueRoleIdentify, to identify the role for each player in the game.
 
 ## Getting Started
 
@@ -33,6 +35,7 @@ The app uses the following dependencies:
 Here are some screenshots of the app:
 
 ![Home page](/screenshots/home.png)
+![Home page](/screenshots/home2.png)
 ![Match history page](/screenshots/match_history.png)
 ![Match info page](/screenshots/match_info.png)
 ![Match details page](/screenshots/match_details.png)
