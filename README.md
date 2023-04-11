@@ -9,8 +9,10 @@ The app consists of the following pages:
 ### Home Page
 The Home page is the first screen users see when they open the app. It displays information about the summoners that the user has saved as favorites. Users can select a League of Legends server and search for summoners.
 
-<img src="flutter_league/screenshots/home.png" width="250">
-<img src="flutter_league/screenshots/home2.png" width="250">
+<p float="left">
+  <img src="flutter_league/screenshots/home.png" width="250" />
+  <img src="flutter_league/screenshots/home2.png" width="250" /> 
+</p>
 
 ### Match History Page
 The Match History Page displays a summoner's match history. It shows the summoner's rank, match history data, and provides the user with the option to load more matches.
