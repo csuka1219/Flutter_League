@@ -221,7 +221,7 @@ class MatchItem extends StatelessWidget {
 
   Text _buildKDAText(String text, Color color) {
     return Text(
-      "$text / ",
+      text,
       style: TextStyle(
         color: color,
         fontSize: 16.0,

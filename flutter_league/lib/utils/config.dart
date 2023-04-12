@@ -1,10 +1,9 @@
-// Importing the required module
 import 'package:flutter_riot_api/utils/riotdata_formatter.dart';
 
 // Defining a Config class
 class Config {
   // Static string variable to store the Riot Games API key
-  static String apikey = "RGAPI-a08518b3-6007-40a0-b7e6-8a2d57a49e07";
+  static String apikey = "<API-KEY>";
 
   // Static string variable to store the base URL for API requests
   static String apiUrl = "https://$currentServer.api.riotgames.com/lol/";
