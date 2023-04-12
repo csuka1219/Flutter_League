@@ -4,6 +4,7 @@ Flutter League is a companion app for League of Legends players that allows them
 ![Made with Flutter](https://img.shields.io/badge/Made%20with-Flutter-blue.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)
+![GitHub stars](https://img.shields.io/github/stars/csuka1219/Flutter_League.svg?style=social&label=Star)
 
 ## Pages
 The app consists of the following pages:
