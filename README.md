@@ -55,6 +55,15 @@ The app uses the following dependencies:
 - tuple: A library for creating and manipulating tuples.
 - shared_preferences: A library for persisting key-value data on the device.
 
+## Contributing
+There are still some features and improvements that could be made to this app. If you would like to contribute, please feel free to fork the repository and create a pull request. Here are some things that could be improved:
+
+- Add a message box to display the result when searching for a summoner that does not exist.
+- Add a message box to display the result when clicking on the "Live Game" button if there is no currently ongoing game.
+- Remove the display of players' roles in ARAM mode in the "Live Game" page.
+- There are some unsupported game modes such as "One For All".
+- You can implement any new features you desire.
+
 ## License
 This project is licensed under the MIT License. Feel free to use it for your own purposes.
 
