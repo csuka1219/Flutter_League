@@ -87,7 +87,7 @@ class CustomAppBar extends StatelessWidget {
     // Returns an Expanded widget that contains the app title as a Text widget
     return Expanded(
       child: Text(
-        'FlutterLeage',
+        'FlutterLeague',
         style: TextStyle(
           color: ColorPalette().secondary,
           fontSize: 32.0,
